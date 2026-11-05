@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
     "auth:schema": "auth generate --config src/lib/auth.ts --output src/db/schema.ts --yes",
     "db:generate": "drizzle-kit generate",
