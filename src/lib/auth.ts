@@ -5,7 +5,7 @@ import { admin, haveIBeenPwned, lastLoginMethod, twoFactor } from "better-auth/p
 import { passkey } from "@better-auth/passkey";
 import { db } from "@/db";
 import * as schema from "@/db/schema";
-import { baseURL, env } from "@/lib/env";
+import { baseURL, emailFeatures, env } from "@/lib/env";
 import { sendEmail } from "@/lib/email/send";
 import {
   deleteAccountTemplate,
@@ -42,7 +42,7 @@ export const auth = betterAuth({
 
   emailAndPassword: {
     enabled: true,
-    requireEmailVerification: true,
+    requireEmailVerification: emailFeatures.verificationRequired,
     minPasswordLength: 8,
     maxPasswordLength: 128,
     resetPasswordTokenExpiresIn: ONE_HOUR,
@@ -54,9 +54,9 @@ export const auth = betterAuth({
   },
 
   emailVerification: {
-    sendOnSignUp: true,
+    sendOnSignUp: emailFeatures.verificationRequired,
     // An unverified user who tries to sign in gets a fresh link.
-    sendOnSignIn: true,
+    sendOnSignIn: emailFeatures.verificationRequired,
     autoSignInAfterVerification: true,
     expiresIn: ONE_HOUR,
     sendVerificationEmail: async ({ user, url }) => {
@@ -78,10 +78,16 @@ export const auth = betterAuth({
   user: {
     deleteUser: {
       enabled: true,
-      sendDeleteAccountVerification: async ({ user, url }) => {
-        const mail = deleteAccountTemplate(user.name, url);
-        await sendEmail({ to: user.email, ...mail });
-      },
+      // Confirm by email when email works; otherwise the password (or a
+      // fresh session) is the confirmation.
+      ...(emailFeatures.delivery
+        ? {
+            sendDeleteAccountVerification: async ({ user, url }) => {
+              const mail = deleteAccountTemplate(user.name, url);
+              await sendEmail({ to: user.email, ...mail });
+            },
+          }
+        : {}),
     },
   },
 
@@ -111,9 +117,13 @@ export const auth = betterAuth({
   databaseHooks: {
     user: {
       create: {
-        // Emails listed in ADMIN_EMAILS get the admin role on sign-up.
+        // Emails listed in ADMIN_EMAILS get the admin role on sign-up, but only
+        // when the email is proven: verification is required before sign-in,
+        // or the provider (Google/GitHub) already verified it. Without that,
+        // anyone could sign up with the admin's address on a demo.
         before: async (user) => {
-          if (env.ADMIN_EMAILS.includes(user.email.toLowerCase())) {
+          const proven = emailFeatures.verificationRequired || user.emailVerified;
+          if (proven && env.ADMIN_EMAILS.includes(user.email.toLowerCase())) {
             return { data: { ...user, role: "admin" } };
           }
         },

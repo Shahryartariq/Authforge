@@ -83,8 +83,20 @@ Open http://localhost:3000 and sign up. Without `RESEND_API_KEY`, the verificati
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | No | Turns on Google sign-in |
 | `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` | No | Turns on GitHub sign-in |
 | `PWNED_PASSWORD_CHECK` | No | `true` by default. Set it to `false` only offline |
+| `REQUIRE_EMAIL_VERIFICATION` | No | `true` by default. Set it to `false` for a demo with no email provider (see below) |
 
 A missing or malformed value stops the app at startup with a clear message. See [`.env.example`](.env.example).
+
+### Demo mode (no email provider)
+
+The [live demo](https://getauthforge.vercel.app) runs with `REQUIRE_EMAIL_VERIFICATION=false` and no Resend key, so visitors can try every feature without a real inbox. In this mode:
+
+- New accounts can sign in right away, without verifying their email.
+- `ADMIN_EMAILS` only applies to Google or GitHub sign-ups (where the provider has verified the email), so nobody can claim admin by typing the admin's address.
+- Password reset links can't be sent, and the reset page says so.
+- Deleting an account happens immediately after the password check, instead of waiting for an email confirmation.
+
+Keep verification on for a real app.
 
 ### Setting up Google and GitHub
 

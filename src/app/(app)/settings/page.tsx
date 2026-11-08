@@ -10,7 +10,7 @@ import { SessionsSection } from "@/components/settings/sessions";
 import { TwoFactorSection } from "@/components/settings/two-factor";
 import { Skeleton } from "@/components/ui/primitives";
 import { auth } from "@/lib/auth";
-import { providers } from "@/lib/env";
+import { emailFeatures, providers } from "@/lib/env";
 import { requireSession } from "@/lib/session";
 
 export const metadata: Metadata = { title: "Settings" };
@@ -43,7 +43,7 @@ async function Settings() {
     <div className="flex flex-col gap-6">
       <ProfileForm name={user.name} email={user.email} />
       <div id="security" className="flex scroll-mt-20 flex-col gap-6">
-        <PasswordSection hasPassword={hasPassword} email={user.email} />
+        <PasswordSection hasPassword={hasPassword} email={user.email} emailDelivery={emailFeatures.delivery} />
         <TwoFactorSection enabled={Boolean(user.twoFactorEnabled)} hasPassword={hasPassword} />
         <PasskeysSection
           passkeys={passkeys.map((p) => ({
@@ -70,7 +70,7 @@ async function Settings() {
           updatedAt: new Date(s.updatedAt).toISOString(),
         }))}
       />
-      <DeleteAccount hasPassword={hasPassword} />
+      <DeleteAccount hasPassword={hasPassword} emailDelivery={emailFeatures.delivery} />
     </div>
   );
 }

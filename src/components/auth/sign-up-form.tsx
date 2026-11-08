@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { MailCheck } from "lucide-react";
 import { PasswordInput } from "@/components/auth/password-input";
 import { SocialButtons } from "@/components/auth/social-buttons";
@@ -10,11 +10,18 @@ import { Button } from "@/components/ui/button";
 import { Alert, Field, Input, Separator } from "@/components/ui/primitives";
 import { authClient } from "@/lib/auth-client";
 import { authErrorMessage } from "@/lib/auth-errors";
-import type { EnabledProviders } from "@/lib/env";
+import type { EmailFeatures, EnabledProviders } from "@/lib/env";
 import { safeRedirect } from "@/lib/utils";
 import { fieldErrors, signUpSchema } from "@/lib/validation";
 
-export function SignUpForm({ providers }: { providers: EnabledProviders }) {
+export function SignUpForm({
+  providers,
+  email: emailFeatures,
+}: {
+  providers: EnabledProviders;
+  email: EmailFeatures;
+}) {
+  const router = useRouter();
   const params = useSearchParams();
   const callbackURL = safeRedirect(params.get("callbackURL"));
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -37,8 +44,17 @@ export function SignUpForm({ providers }: { providers: EnabledProviders }) {
       password,
       callbackURL: `/verify-email?next=${encodeURIComponent(callbackURL)}`,
     });
+    if (error) {
+      setPending(false);
+      return setFormError(authErrorMessage(error));
+    }
+    if (!emailFeatures.verificationRequired) {
+      // Demo mode: the account is active and signed in right away.
+      router.push(callbackURL);
+      router.refresh();
+      return;
+    }
     setPending(false);
-    if (error) return setFormError(authErrorMessage(error));
     setSentTo(email);
   }
 
@@ -50,6 +66,13 @@ export function SignUpForm({ providers }: { providers: EnabledProviders }) {
         <h1 className="text-2xl font-semibold tracking-tight">Create your account</h1>
         <p className="text-sm text-muted-foreground">It takes less than a minute.</p>
       </div>
+
+      {!emailFeatures.verificationRequired && (
+        <p className="rounded-lg border border-dashed px-3 py-2 text-[13px] text-muted-foreground">
+          Demo mode: email verification is off on this deployment, so you can sign in right after creating an
+          account. Use any email; no messages are sent.
+        </p>
+      )}
 
       <SocialButtons providers={providers} callbackURL={callbackURL} />
       {(providers.google || providers.github) && <Separator label="or" />}
