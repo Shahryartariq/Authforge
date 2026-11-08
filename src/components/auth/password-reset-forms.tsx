@@ -11,7 +11,7 @@ import { authClient } from "@/lib/auth-client";
 import { authErrorMessage } from "@/lib/auth-errors";
 import { emailSchema, fieldErrors, resetPasswordSchema } from "@/lib/validation";
 
-export function ForgotPasswordForm() {
+export function ForgotPasswordForm({ emailDelivery }: { emailDelivery: boolean }) {
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
   const [sent, setSent] = useState(false);
@@ -35,7 +35,9 @@ export function ForgotPasswordForm() {
         <h1 className="text-2xl font-semibold tracking-tight">Reset your password</h1>
         <p className="text-sm text-muted-foreground">Enter your email and we&apos;ll send you a reset link.</p>
       </div>
-      {sent ? (
+      {!emailDelivery ? (
+        <Alert>Email isn&apos;t set up on this deployment, so reset links can&apos;t be sent. Sign in with a passkey or ask an admin for help.</Alert>
+      ) : sent ? (
         <Alert tone="success">If an account exists for that email, a reset link is on its way. It expires in 1 hour.</Alert>
       ) : (
         <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>

@@ -47,6 +47,13 @@ const schema = z.object({
     .enum(["true", "false"])
     .default("true")
     .transform((v) => v === "true"),
+
+  // Set to "false" for a public demo with no email provider: people can sign
+  // up and sign in without verifying their address. Keep it on for real apps.
+  REQUIRE_EMAIL_VERIFICATION: z
+    .enum(["true", "false"])
+    .default("true")
+    .transform((v) => v === "true"),
 });
 
 const parsed = schema.safeParse(process.env);
@@ -75,3 +82,14 @@ export const providers = {
 };
 
 export type EnabledProviders = typeof providers;
+
+/**
+ * What this deployment can do with email. In development, emails print to the
+ * console, so delivery always "works". In production it needs RESEND_API_KEY.
+ */
+export const emailFeatures = {
+  delivery: Boolean(env.RESEND_API_KEY) || env.NODE_ENV !== "production",
+  verificationRequired: env.REQUIRE_EMAIL_VERIFICATION,
+};
+
+export type EmailFeatures = typeof emailFeatures;

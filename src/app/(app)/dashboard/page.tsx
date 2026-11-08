@@ -5,6 +5,7 @@ import { headers } from "next/headers";
 import { ArrowRight, BadgeCheck, Fingerprint, KeyRound, Link2, ShieldCheck, ShieldAlert } from "lucide-react";
 import { Badge, Card, CardContent, CardDescription, CardHeader, CardTitle, Skeleton } from "@/components/ui/primitives";
 import { auth } from "@/lib/auth";
+import { emailFeatures } from "@/lib/env";
 import { isAdmin, requireSession } from "@/lib/session";
 
 export const metadata: Metadata = { title: "Dashboard" };
@@ -30,7 +31,7 @@ async function Dashboard() {
   const social = providers.filter((p) => p !== "credential");
   const twoFactor = Boolean(user.twoFactorEnabled);
   const checks = [
-    { done: user.emailVerified, label: "Verify your email" },
+    ...(emailFeatures.verificationRequired ? [{ done: user.emailVerified, label: "Verify your email" }] : []),
     { done: twoFactor, label: "Turn on two-factor authentication" },
     { done: passkeys.length > 0, label: "Add a passkey" },
   ];

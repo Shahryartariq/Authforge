@@ -11,7 +11,15 @@ import { authClient } from "@/lib/auth-client";
 import { authErrorMessage } from "@/lib/auth-errors";
 import { changePasswordSchema, fieldErrors } from "@/lib/validation";
 
-export function PasswordSection({ hasPassword, email }: { hasPassword: boolean; email: string }) {
+export function PasswordSection({
+  hasPassword,
+  email,
+  emailDelivery,
+}: {
+  hasPassword: boolean;
+  email: string;
+  emailDelivery: boolean;
+}) {
   const router = useRouter();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [pending, setPending] = useState(false);
@@ -26,6 +34,8 @@ export function PasswordSection({ hasPassword, email }: { hasPassword: boolean; 
             size="sm"
             variant="outline"
             loading={pending}
+            disabled={!emailDelivery}
+            title={emailDelivery ? undefined : "Email isn't set up on this deployment"}
             onClick={async () => {
               setPending(true);
               const res = await authClient.requestPasswordReset({ email, redirectTo: "/reset-password" });
