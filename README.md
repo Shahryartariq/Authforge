@@ -8,7 +8,7 @@
 
 Email and password · Google and GitHub · Two-factor · Passkeys · Roles and an admin panel
 
-[Live demo](https://authforge.vercel.app) · [Quick start](#quick-start) · [Deploy](#deploy-to-vercel) · [How it works](#how-it-works)
+[Live demo](https://getauthforge.vercel.app) · [Quick start](#quick-start) · [Deploy](#deploy-to-vercel) · [How it works](#how-it-works)
 
 [![CI](https://github.com/Shahryartariq/authforge/actions/workflows/ci.yml/badge.svg)](https://github.com/Shahryartariq/authforge/actions/workflows/ci.yml)
 ![Next.js 16](https://img.shields.io/badge/Next.js-16-black)
