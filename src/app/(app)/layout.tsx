@@ -5,7 +5,7 @@ import { NavLinks } from "@/components/app/nav-links";
 import { UserMenu } from "@/components/app/user-menu";
 import { Logo } from "@/components/icons";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { Skeleton } from "@/components/ui/primitives";
+import { Skeleton } from "@/components/ui/skeleton";
 import { isAdmin, requireSession } from "@/lib/session";
 import { site } from "@/lib/site";
 

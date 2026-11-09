@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
-import { Input } from "@/components/ui/primitives";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { passwordStrength } from "@/lib/validation";
 
@@ -13,7 +13,7 @@ export function PasswordInput({ showStrength, className, ...props }: Props) {
   const [value, setValue] = useState("");
   const score = passwordStrength(value);
   const labels = ["Too short", "Weak", "Fair", "Good", "Strong"];
-  const colors = ["bg-border", "bg-destructive", "bg-amber-500", "bg-accent", "bg-success"];
+  const colors = ["bg-border", "bg-destructive", "bg-amber-500", "bg-brand", "bg-success"];
 
   return (
     <div className="flex flex-col gap-2">

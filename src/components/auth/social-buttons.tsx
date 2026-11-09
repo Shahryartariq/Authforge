@@ -4,7 +4,7 @@ import { useState, useSyncExternalStore } from "react";
 import { toast } from "sonner";
 import { GitHubIcon, GoogleIcon } from "@/components/icons";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/primitives";
+import { Badge } from "@/components/ui/badge";
 import { authClient } from "@/lib/auth-client";
 import { authErrorMessage } from "@/lib/auth-errors";
 import type { EnabledProviders } from "@/lib/env";
@@ -62,7 +62,7 @@ export function SocialButtons({
           {pending !== id && <Icon />}
           {label}
           {lastUsed === id && (
-            <Badge tone="accent" className="absolute -top-2 right-2 px-1.5 py-0 text-[10px]">
+            <Badge variant="brand" className="absolute -top-2 right-2 px-1.5 py-0 text-[10px]">
               Last used
             </Badge>
           )}

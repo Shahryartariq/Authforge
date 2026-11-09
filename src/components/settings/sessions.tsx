@@ -6,7 +6,7 @@ import { Laptop, Smartphone } from "lucide-react";
 import { toast } from "sonner";
 import { Section } from "@/components/settings/section";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/primitives";
+import { Badge } from "@/components/ui/badge";
 import { authClient } from "@/lib/auth-client";
 import { authErrorMessage } from "@/lib/auth-errors";
 import { describeUserAgent } from "@/lib/user-agent";
@@ -74,7 +74,7 @@ export function SessionsSection({ sessions, currentId }: { sessions: SessionRow[
                 </p>
               </div>
               {current ? (
-                <Badge tone="accent">This device</Badge>
+                <Badge variant="brand">This device</Badge>
               ) : (
                 <Button size="sm" variant="ghost" onClick={() => revoke(s.token, s.id)} loading={pending === s.id}>
                   Sign out

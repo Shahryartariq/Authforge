@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { PasswordInput } from "@/components/auth/password-input";
 import { Section } from "@/components/settings/section";
 import { Button } from "@/components/ui/button";
-import { Field } from "@/components/ui/primitives";
+import { Field } from "@/components/ui/field";
 import { authClient } from "@/lib/auth-client";
 import { authErrorMessage } from "@/lib/auth-errors";
 import { changePasswordSchema, fieldErrors } from "@/lib/validation";

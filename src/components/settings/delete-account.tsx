@@ -6,7 +6,8 @@ import { toast } from "sonner";
 import { PasswordInput } from "@/components/auth/password-input";
 import { Section } from "@/components/settings/section";
 import { Button } from "@/components/ui/button";
-import { Alert, Field } from "@/components/ui/primitives";
+import { Field } from "@/components/ui/field";
+import { FormAlert } from "@/components/form-alert";
 import { authClient } from "@/lib/auth-client";
 import { authErrorMessage } from "@/lib/auth-errors";
 
@@ -45,7 +46,7 @@ export function DeleteAccount({ hasPassword, emailDelivery }: { hasPassword: boo
   if (sent) {
     return (
       <Section title="Delete account" description="Check your inbox to finish." danger>
-        <Alert tone="success">We emailed you a confirmation link. Your account is deleted once you open it.</Alert>
+        <FormAlert variant="success">We emailed you a confirmation link. Your account is deleted once you open it.</FormAlert>
       </Section>
     );
   }

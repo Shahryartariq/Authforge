@@ -8,7 +8,10 @@ import { toast } from "sonner";
 import { PasswordInput } from "@/components/auth/password-input";
 import { Section } from "@/components/settings/section";
 import { Button } from "@/components/ui/button";
-import { Alert, Badge, Field, Input } from "@/components/ui/primitives";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Field } from "@/components/ui/field";
+import { FormAlert } from "@/components/form-alert";
 import { authClient } from "@/lib/auth-client";
 import { authErrorMessage } from "@/lib/auth-errors";
 import { site } from "@/lib/site";
@@ -26,7 +29,7 @@ export function TwoFactorSection({ enabled, hasPassword }: { enabled: boolean; h
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
 
-  const status = <Badge tone={enabled ? "success" : "neutral"}>{enabled ? "On" : "Off"}</Badge>;
+  const status = <Badge variant={enabled ? "success" : "secondary"}>{enabled ? "On" : "Off"}</Badge>;
 
   async function confirmPassword(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -225,9 +228,9 @@ export function TwoFactorSection({ enabled, hasPassword }: { enabled: boolean; h
       }
     >
       {enabled ? null : (
-        <Alert tone="success" className="bg-accent-soft text-accent">
+        <FormAlert variant="info">
           Recommended. It stops someone who learns your password from getting in.
-        </Alert>
+        </FormAlert>
       )}
     </Section>
   );

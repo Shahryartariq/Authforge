@@ -1,4 +1,4 @@
-import { Card } from "@/components/ui/primitives";
+import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
 export function Section({
@@ -15,7 +15,7 @@ export function Section({
   danger?: boolean;
 }) {
   return (
-    <Card className={cn(danger && "border-destructive/40")}>
+    <Card className={cn("gap-0 py-0", danger && "border-destructive/40")}>
       <div className="flex flex-col gap-1 p-6 pb-4">
         <h2 className={cn("text-base font-semibold tracking-tight", danger && "text-destructive")}>{title}</h2>
         <div className="text-sm text-muted-foreground">{description}</div>

@@ -6,7 +6,20 @@ import { Fingerprint, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Section } from "@/components/settings/section";
 import { Button } from "@/components/ui/button";
-import { Badge, Field, Input } from "@/components/ui/primitives";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Field } from "@/components/ui/field";
 import { authClient } from "@/lib/auth-client";
 import { authErrorMessage } from "@/lib/auth-errors";
 
@@ -30,7 +43,6 @@ export function PasskeysSection({ passkeys }: { passkeys: Passkey[] }) {
   }
 
   async function remove(id: string) {
-    if (!confirm("Remove this passkey? You won't be able to sign in with it anymore.")) return;
     setPending(id);
     const res = await authClient.passkey.deletePasskey({ id });
     setPending(null);
@@ -64,9 +76,25 @@ export function PasskeysSection({ passkeys }: { passkeys: Passkey[] }) {
               </p>
             </div>
             {p.deviceType === "multiDevice" && <Badge className="hidden sm:inline-flex">Multi-device</Badge>}
-            <Button size="icon" variant="ghost" aria-label={`Remove ${p.name || "passkey"}`} onClick={() => remove(p.id)} loading={pending === p.id}>
-              {pending !== p.id && <Trash2 />}
-            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button size="icon" variant="ghost" aria-label={`Remove ${p.name || "passkey"}`} loading={pending === p.id}>
+                  {pending !== p.id && <Trash2 />}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Remove {p.name || "this passkey"}?</AlertDialogTitle>
+                  <AlertDialogDescription>You won&apos;t be able to sign in with it anymore.</AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction variant="destructive" onClick={() => remove(p.id)}>
+                    Remove passkey
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         ))}
         {adding && (

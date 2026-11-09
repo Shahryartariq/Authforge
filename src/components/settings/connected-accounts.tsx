@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { GitHubIcon, GoogleIcon } from "@/components/icons";
 import { Section } from "@/components/settings/section";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/primitives";
+import { Badge } from "@/components/ui/badge";
 import { authClient } from "@/lib/auth-client";
 import { authErrorMessage } from "@/lib/auth-errors";
 import type { EnabledProviders } from "@/lib/env";
@@ -66,7 +66,7 @@ export function ConnectedAccounts({
               <span className="flex-1 text-sm font-medium">{label}</span>
               {account ? (
                 <>
-                  <Badge tone="success">Connected</Badge>
+                  <Badge variant="success">Connected</Badge>
                   <Button
                     size="sm"
                     variant="ghost"

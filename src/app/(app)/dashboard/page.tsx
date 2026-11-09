@@ -3,7 +3,9 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { headers } from "next/headers";
 import { ArrowRight, BadgeCheck, Fingerprint, KeyRound, Link2, ShieldCheck, ShieldAlert } from "lucide-react";
-import { Badge, Card, CardContent, CardDescription, CardHeader, CardTitle, Skeleton } from "@/components/ui/primitives";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { auth } from "@/lib/auth";
 import { emailFeatures } from "@/lib/env";
 import { isAdmin, requireSession } from "@/lib/session";
@@ -42,7 +44,7 @@ async function Dashboard() {
       <div className="flex flex-col gap-1">
         <div className="flex items-center gap-2">
           <h1 className="text-2xl font-semibold tracking-tight">Hi, {user.name.split(" ")[0]}</h1>
-          {isAdmin(user.role) && <Badge tone="accent">Admin</Badge>}
+          {isAdmin(user.role) && <Badge variant="brand">Admin</Badge>}
         </div>
         <p className="text-sm text-muted-foreground">Here&apos;s an overview of your account security.</p>
       </div>
@@ -70,9 +72,9 @@ async function Dashboard() {
               <div key={c.label} className="flex items-center justify-between rounded-lg border px-3 py-2.5 text-sm">
                 <span className={c.done ? "text-muted-foreground line-through" : ""}>{c.label}</span>
                 {c.done ? (
-                  <Badge tone="success">Done</Badge>
+                  <Badge variant="success">Done</Badge>
                 ) : (
-                  <Link href="/settings#security" className="inline-flex items-center gap-1 text-accent hover:underline">
+                  <Link href="/settings#security" className="inline-flex items-center gap-1 text-brand hover:underline">
                     Set up <ArrowRight className="size-3.5" />
                   </Link>
                 )}
@@ -96,7 +98,7 @@ async function Dashboard() {
               }
             />
             <Row label="Member since" value={new Date(user.createdAt).toLocaleDateString("en", { dateStyle: "medium" })} />
-            <Link href="/settings" className="mt-2 inline-flex items-center gap-1 text-accent hover:underline">
+            <Link href="/settings" className="mt-2 inline-flex items-center gap-1 text-brand hover:underline">
               <KeyRound className="size-4" /> Manage security settings
             </Link>
           </CardContent>
@@ -108,7 +110,7 @@ async function Dashboard() {
 
 function Stat({ icon: Icon, label, value, ok }: { icon: React.ElementType; label: string; value: string; ok: boolean }) {
   return (
-    <Card className="flex items-center gap-3 p-4">
+    <Card className="flex-row items-center gap-3 p-4">
       <span className={`flex size-10 items-center justify-center rounded-lg ${ok ? "bg-success-soft text-success" : "bg-destructive-soft text-destructive"}`}>
         <Icon className="size-5" />
       </span>

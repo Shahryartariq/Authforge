@@ -7,7 +7,10 @@ import { MailCheck } from "lucide-react";
 import { PasswordInput } from "@/components/auth/password-input";
 import { SocialButtons } from "@/components/auth/social-buttons";
 import { Button } from "@/components/ui/button";
-import { Alert, Field, Input, Separator } from "@/components/ui/primitives";
+import { Input } from "@/components/ui/input";
+import { Field } from "@/components/ui/field";
+import { FormAlert } from "@/components/form-alert";
+import { OrDivider } from "@/components/auth/or-divider";
 import { authClient } from "@/lib/auth-client";
 import { authErrorMessage } from "@/lib/auth-errors";
 import type { EmailFeatures, EnabledProviders } from "@/lib/env";
@@ -75,10 +78,10 @@ export function SignUpForm({
       )}
 
       <SocialButtons providers={providers} callbackURL={callbackURL} />
-      {(providers.google || providers.github) && <Separator label="or" />}
+      {(providers.google || providers.github) && <OrDivider />}
 
       <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
-        {formError && <Alert>{formError}</Alert>}
+        {formError && <FormAlert>{formError}</FormAlert>}
 
         <Field label="Name" htmlFor="name" error={errors.name}>
           <Input id="name" name="name" autoComplete="name" placeholder="Ada Lovelace" aria-invalid={Boolean(errors.name)} />
@@ -122,7 +125,7 @@ export function CheckInbox({ email, callbackURL = "/dashboard" }: { email: strin
 
   return (
     <div className="flex flex-col items-start gap-5">
-      <span className="flex size-11 items-center justify-center rounded-full bg-accent-soft text-accent">
+      <span className="flex size-11 items-center justify-center rounded-full bg-brand-soft text-brand">
         <MailCheck className="size-5" />
       </span>
       <div className="flex flex-col gap-1.5">
@@ -132,8 +135,8 @@ export function CheckInbox({ email, callbackURL = "/dashboard" }: { email: strin
           activate your account. The link expires in 1 hour.
         </p>
       </div>
-      {state === "sent" && <Alert tone="success">A new link is on its way.</Alert>}
-      {state === "error" && <Alert>Couldn&apos;t resend right now. Please wait a minute and try again.</Alert>}
+      {state === "sent" && <FormAlert variant="success">A new link is on its way.</FormAlert>}
+      {state === "error" && <FormAlert>Couldn&apos;t resend right now. Please wait a minute and try again.</FormAlert>}
       <div className="flex gap-2">
         <Button variant="outline" onClick={resend} loading={state === "sending"} disabled={state === "sent"}>
           Resend email
