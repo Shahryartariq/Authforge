@@ -94,8 +94,10 @@ export const auth = betterAuth({
   session: {
     expiresIn: 7 * ONE_DAY,
     updateAge: ONE_DAY,
-    // Short cache so bans and revocations take effect quickly.
-    cookieCache: { enabled: true, maxAge: 2 * 60 },
+    // No cookie cache: every request checks the session in the database, so
+    // sign-outs, password changes and bans take effect immediately. (With a
+    // cache, a revoked session keeps working until the cache expires.)
+    cookieCache: { enabled: false },
   },
 
   rateLimit: {
