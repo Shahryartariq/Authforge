@@ -1,10 +1,8 @@
 import { betterAuth } from "better-auth";
-import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
 import { admin, haveIBeenPwned, lastLoginMethod, twoFactor } from "better-auth/plugins";
 import { passkey } from "@better-auth/passkey";
-import { db } from "@/db";
-import * as schema from "@/db/schema";
+import { authAdapter } from "@/db/adapter";
 import { baseURL, emailFeatures, env } from "@/lib/env";
 import { sendEmail } from "@/lib/email/send";
 import {
@@ -38,7 +36,7 @@ export const auth = betterAuth({
   secret: env.BETTER_AUTH_SECRET,
   trustedOrigins: [baseURL],
 
-  database: drizzleAdapter(db, { provider: "pg", schema }),
+  database: authAdapter,
 
   emailAndPassword: {
     enabled: true,

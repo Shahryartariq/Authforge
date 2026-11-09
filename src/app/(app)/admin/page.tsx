@@ -1,13 +1,11 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { count, desc, eq, ilike, or, sql } from "drizzle-orm";
 import { CreateUser } from "@/components/admin/create-user";
 import { UserSearch } from "@/components/admin/user-search";
 import { UsersTable, type AdminUserRow } from "@/components/admin/users-table";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { db } from "@/db";
-import { user } from "@/db/schema";
+import { getUserStats, listUsers } from "@/db/queries";
 import { requireAdmin } from "@/lib/session";
 
 export const metadata: Metadata = { title: "Admin" };
@@ -45,21 +43,13 @@ async function AdminOnly({ children }: { children: React.ReactNode }) {
 
 async function Stats() {
   await requireAdmin();
-  const [row] = await db
-    .select({
-      total: count(),
-      verified: sql<number>`count(*) filter (where ${user.emailVerified})`.mapWith(Number),
-      twoFactor: sql<number>`count(*) filter (where ${user.twoFactorEnabled})`.mapWith(Number),
-      banned: sql<number>`count(*) filter (where ${user.banned})`.mapWith(Number),
-    })
-    .from(user);
-  const [admins] = await db.select({ n: count() }).from(user).where(eq(user.role, "admin"));
+  const row = await getUserStats();
 
   const stats = [
     { label: "Users", value: row.total },
     { label: "Verified", value: row.verified },
     { label: "Using 2FA", value: row.twoFactor },
-    { label: "Admins", value: admins.n },
+    { label: "Admins", value: row.admins },
     { label: "Banned", value: row.banned },
   ];
   return (
@@ -80,20 +70,7 @@ async function Users({ searchParams }: { searchParams: PageProps<"/admin">["sear
   const q = typeof params.q === "string" ? params.q.trim().slice(0, 100) : "";
   const page = Math.max(1, Number(params.page) || 1);
 
-  // Case-insensitive search across name and email. `%` and `_` are escaped.
-  const pattern = `%${q.replace(/[\\%_]/g, (c) => `\\${c}`)}%`;
-  const where = q ? or(ilike(user.name, pattern), ilike(user.email, pattern)) : undefined;
-
-  const [users, [{ total }]] = await Promise.all([
-    db
-      .select()
-      .from(user)
-      .where(where)
-      .orderBy(desc(user.createdAt))
-      .limit(PAGE_SIZE)
-      .offset((page - 1) * PAGE_SIZE),
-    db.select({ total: count() }).from(user).where(where),
-  ]);
+  const { users, total } = await listUsers({ query: q, page, pageSize: PAGE_SIZE });
 
   const rows: AdminUserRow[] = users.map((u) => ({
     id: u.id,
