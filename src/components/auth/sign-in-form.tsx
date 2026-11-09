@@ -17,18 +17,46 @@ import type { EnabledProviders } from "@/lib/env";
 import { safeRedirect } from "@/lib/utils";
 import { fieldErrors, signInSchema } from "@/lib/validation";
 
+/** The /sign-in page: reads callbackURL and error from the URL. */
 export function SignInForm({ providers }: { providers: EnabledProviders }) {
-  const router = useRouter();
   const params = useSearchParams();
-  const callbackURL = safeRedirect(params.get("callbackURL"));
+  return (
+    <SignInPanel
+      providers={providers}
+      callbackURL={safeRedirect(params.get("callbackURL"))}
+      initialError={params.get("error") ? "Sign-in failed. Please try again." : ""}
+      passkeyAutofill
+    />
+  );
+}
+
+/**
+ * The sign-in form itself, shared by the /sign-in page and the sign-in popup.
+ * `showHeader={false}` lets a dialog render its own accessible title.
+ */
+export function SignInPanel({
+  providers,
+  callbackURL,
+  initialError = "",
+  showHeader = true,
+  passkeyAutofill = false,
+}: {
+  providers: EnabledProviders;
+  callbackURL: string;
+  initialError?: string;
+  showHeader?: boolean;
+  passkeyAutofill?: boolean;
+}) {
+  const router = useRouter();
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [formError, setFormError] = useState(params.get("error") ? "Sign-in failed. Please try again." : "");
+  const [formError, setFormError] = useState(initialError);
   const [notice, setNotice] = useState("");
   const [pending, setPending] = useState<"password" | "passkey" | null>(null);
 
   // Offer saved passkeys in the browser's autofill menu (conditional UI).
   useEffect(() => {
     if (
+      !passkeyAutofill ||
       typeof window === "undefined" ||
       !window.PublicKeyCredential?.isConditionalMediationAvailable
     ) {
@@ -41,7 +69,7 @@ export function SignInForm({ providers }: { providers: EnabledProviders }) {
         fetchOptions: { onSuccess: () => router.push(callbackURL) },
       });
     });
-  }, [router, callbackURL]);
+  }, [router, callbackURL, passkeyAutofill]);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -82,10 +110,12 @@ export function SignInForm({ providers }: { providers: EnabledProviders }) {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-1.5">
-        <h1 className="text-2xl font-semibold tracking-tight">Welcome back</h1>
-        <p className="text-sm text-muted-foreground">Sign in to your account to continue.</p>
-      </div>
+      {showHeader && (
+        <div className="flex flex-col gap-1.5">
+          <h1 className="text-2xl font-semibold tracking-tight">Welcome back</h1>
+          <p className="text-sm text-muted-foreground">Sign in to your account to continue.</p>
+        </div>
+      )}
 
       <SocialButtons providers={providers} callbackURL={callbackURL} />
 

@@ -32,6 +32,7 @@ Every new app needs the same auth work: sign-up with email verification, passwor
 | **Two-factor (TOTP)** | QR setup for any authenticator app, 10 single-use backup codes, a 30-day trusted-device option and a lockout after repeated wrong codes |
 | **Passkeys** | Face ID, Touch ID, Windows Hello and security keys, including passkey autofill in the browser's email field |
 | **Roles and admin panel** | Search users, promote or demote admins, ban temporarily or permanently, sign a user out everywhere, impersonate to debug, create and delete users |
+| **Sign in in a popup** | `SignInButton` opens the full sign-in form (password, passkey, Google/GitHub, 2FA) in a dialog, so people sign in without leaving the page. The landing page uses it; `/sign-in` still works as a full page |
 | **Account settings** | Change name and password, manage 2FA and passkeys, connect or disconnect Google and GitHub, see and revoke active sessions, delete the account after an email confirmation |
 | **Security defaults** | Rate limits stored in Postgres (so they hold across serverless instances), secure HTTP-only cookies, CSRF protection, open-redirect guards, a strict CSP and security headers, and env validation at startup |
 
@@ -147,7 +148,18 @@ export async function deleteProject(id: string) {
 ```
 
 4. On the client, use `authClient` from [`src/lib/auth-client.ts`](src/lib/auth-client.ts), for example `const { data } = authClient.useSession()`.
-5. Add a protected route prefix to the `matcher` in [`src/proxy.ts`](src/proxy.ts).
+5. Put a sign-in anywhere. `SignInButton` opens the sign-in form in a popup (`mode="modal"`) or links to `/sign-in` (`mode="redirect"`):
+
+```tsx
+import { SignInButton } from "@/components/auth/sign-in-button";
+import { Button } from "@/components/ui/button";
+import { providers } from "@/lib/env";
+
+<SignInButton providers={providers} mode="modal" callbackURL="/projects">
+  <Button>Sign in</Button>
+</SignInButton>
+```
+6. Add a protected route prefix to the `matcher` in [`src/proxy.ts`](src/proxy.ts).
 
 If you change the auth config (for example, by adding a Better Auth plugin), run `pnpm auth:schema` and then `pnpm db:generate` to update the schema and create a migration. CI fails if the schema and config drift apart.
 
