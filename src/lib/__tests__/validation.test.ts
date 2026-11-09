@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { authErrorMessage } from "../auth-errors";
+import { isListedAdmin } from "../admin-emails";
+import { authErrorMessage, oauthErrorMessage } from "../auth-errors";
 import { describeUserAgent } from "../user-agent";
 import { initials, safeRedirect } from "../utils";
 import {
@@ -106,5 +107,36 @@ describe("initials", () => {
   it("uses first and last names", () => {
     expect(initials("Grace Brewster Hopper")).toBe("GH");
     expect(initials("", "zed@example.com")).toBe("ZE");
+  });
+});
+
+describe("oauthErrorMessage", () => {
+  it("is empty without an error", () => {
+    expect(oauthErrorMessage(null)).toBe("");
+  });
+  it("explains an existing email account", () => {
+    expect(oauthErrorMessage("account_not_linked")).toMatch(/already exists/);
+  });
+  it("explains a suspended account", () => {
+    expect(oauthErrorMessage("BANNED_USER")).toMatch(/suspended/);
+  });
+  it("falls back for unknown codes", () => {
+    expect(oauthErrorMessage("something_else")).toBe("Sign-in failed. Please try again.");
+  });
+});
+
+describe("isListedAdmin", () => {
+  const admins = ["owner@example.com"];
+  it("makes a listed email admin when verification is required", () => {
+    expect(isListedAdmin({ email: "Owner@Example.com", emailVerified: false }, admins, true)).toBe(true);
+  });
+  it("does not trust an unverified email on a demo (verification off)", () => {
+    expect(isListedAdmin({ email: "owner@example.com", emailVerified: false }, admins, false)).toBe(false);
+  });
+  it("trusts an email Google or GitHub verified, even on a demo", () => {
+    expect(isListedAdmin({ email: "owner@example.com", emailVerified: true }, admins, false)).toBe(true);
+  });
+  it("ignores emails that aren't listed", () => {
+    expect(isListedAdmin({ email: "someone@example.com", emailVerified: true }, admins, true)).toBe(false);
   });
 });
