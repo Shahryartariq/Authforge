@@ -24,6 +24,10 @@ const schema = z.object({
   // Email (Resend). Without a key, emails are printed to the server console.
   RESEND_API_KEY: optional,
   EMAIL_FROM: z.string().default("Authforge <onboarding@resend.dev>"),
+  // For the browser tests: without RESEND_API_KEY, write each email to this
+  // file (one JSON object per line) so tests can follow the links. Never set
+  // it on a real deployment.
+  EMAIL_OUTBOX_FILE: optional,
 
   // OAuth providers. Each one is enabled only when both values are set.
   GOOGLE_CLIENT_ID: optional,
@@ -88,7 +92,7 @@ export type EnabledProviders = typeof providers;
  * console, so delivery always "works". In production it needs RESEND_API_KEY.
  */
 export const emailFeatures = {
-  delivery: Boolean(env.RESEND_API_KEY) || env.NODE_ENV !== "production",
+  delivery: Boolean(env.RESEND_API_KEY || env.EMAIL_OUTBOX_FILE) || env.NODE_ENV !== "production",
   verificationRequired: env.REQUIRE_EMAIL_VERIFICATION,
 };
 

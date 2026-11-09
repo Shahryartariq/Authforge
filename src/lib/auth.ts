@@ -3,6 +3,7 @@ import { nextCookies } from "better-auth/next-js";
 import { admin, haveIBeenPwned, lastLoginMethod, twoFactor } from "better-auth/plugins";
 import { passkey } from "@better-auth/passkey";
 import { authAdapter } from "@/db/adapter";
+import { isListedAdmin } from "@/lib/admin-emails";
 import { baseURL, emailFeatures, env } from "@/lib/env";
 import { sendEmail } from "@/lib/email/send";
 import {
@@ -117,13 +118,9 @@ export const auth = betterAuth({
   databaseHooks: {
     user: {
       create: {
-        // Emails listed in ADMIN_EMAILS get the admin role on sign-up, but only
-        // when the email is proven: verification is required before sign-in,
-        // or the provider (Google/GitHub) already verified it. Without that,
-        // anyone could sign up with the admin's address on a demo.
+        // Emails listed in ADMIN_EMAILS get the admin role on sign-up (see isListedAdmin).
         before: async (user) => {
-          const proven = emailFeatures.verificationRequired || user.emailVerified;
-          if (proven && env.ADMIN_EMAILS.includes(user.email.toLowerCase())) {
+          if (isListedAdmin(user, env.ADMIN_EMAILS, emailFeatures.verificationRequired)) {
             return { data: { ...user, role: "admin" } };
           }
         },
