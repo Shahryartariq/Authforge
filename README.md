@@ -236,6 +236,10 @@ scripts/                 env:setup, admin:promote, smoke test
 
 `pnpm test` runs the unit tests for validation, redirect safety, error messages and user-agent parsing. CI runs everything twice, once with Drizzle and once with Prisma: lint, types, tests, migrations, a schema drift check, a production build and `pnpm test:smoke` against the running app. Every flow was also checked end to end in a real browser against Postgres: sign-up and verification, blocked unverified sign-in, wrong and correct passwords, 2FA setup and sign-in, passkey registration and sign-in, banning, impersonation, password reset, the open-redirect guard and rate limiting (the sixth sign-in attempt in a minute gets a 429).
 
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md).
+
 ## License
 
 [MIT](LICENSE). Use it for anything.
