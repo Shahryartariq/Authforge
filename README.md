@@ -33,6 +33,7 @@ Every new app needs the same auth work: sign-up with email verification, passwor
 | **Passkeys** | Face ID, Touch ID, Windows Hello and security keys, including passkey autofill in the browser's email field |
 | **Roles and admin panel** | Search users, promote or demote admins, ban temporarily or permanently, sign a user out everywhere, impersonate to debug, create and delete users |
 | **Sign in in a popup** | `SignInButton` opens the full sign-in form (password, passkey, Google/GitHub, 2FA) in a dialog, so people sign in without leaving the page. The landing page uses it; `/sign-in` still works as a full page |
+| **Drizzle or Prisma** | Pick your ORM when you set up: `pnpm env:setup` asks, then removes the other one's files, so your project only has one. CI tests both |
 | **Account settings** | Change name and password, manage 2FA and passkeys, connect or disconnect Google and GitHub, see and revoke active sessions, delete the account after an email confirmation |
 | **Security defaults** | Rate limits stored in Postgres (so they hold across serverless instances), secure HTTP-only cookies, CSRF protection, open-redirect guards, a strict CSP and security headers, and env validation at startup |
 
@@ -48,7 +49,7 @@ Every new app needs the same auth work: sign-up with email verification, passwor
 
 - **[Next.js 16](https://nextjs.org)** (App Router, Cache Components, `proxy.ts`) and **React 19**
 - **[Better Auth](https://better-auth.com)** with the two-factor, passkey, admin, last-login-method and HIBP plugins
-- **[Drizzle ORM](https://orm.drizzle.team)** and **PostgreSQL**: pure TypeScript, with no binary engine and fast serverless cold starts
+- **PostgreSQL** with your choice of **[Drizzle ORM](https://orm.drizzle.team)** (the default) or **[Prisma 7](https://www.prisma.io)**
 - **[Resend](https://resend.com)** for transactional email
 - **[shadcn/ui](https://ui.shadcn.com)** (Radix primitives) on **Tailwind CSS v4**. Add more components with `npx shadcn add <name>`
 - **Zod**, **Vitest** and GitHub Actions CI
@@ -61,10 +62,10 @@ You need Node 20.9+, pnpm and a Postgres database. A free [Neon](https://neon.te
 npx degit Shahryartariq/authforge my-app
 cd my-app
 pnpm install
-pnpm env:setup        # creates .env with a fresh secret
+pnpm env:setup        # creates .env with a fresh secret, asks Drizzle or Prisma
 ```
 
-Open `.env`, set `DATABASE_URL`, and add your email to `ADMIN_EMAILS`. Then run:
+Skip the question with `pnpm env:setup --orm prisma` (or `--orm drizzle`). Open `.env`, set `DATABASE_URL`, and add your email to `ADMIN_EMAILS`. Then run:
 
 ```bash
 pnpm db:migrate
@@ -116,14 +117,28 @@ Add `http://localhost:3000/...` versions of these URLs for local development.
 3. Set `BETTER_AUTH_SECRET`, `ADMIN_EMAILS`, `RESEND_API_KEY` and `EMAIL_FROM`. For `EMAIL_FROM`, verify your sending domain in Resend first.
 4. Deploy. Production builds run `pnpm db:migrate` first (see [`vercel.json`](vercel.json)), so the tables are created for you. Preview builds don't touch the database.
 
+## Drizzle or Prisma
+
+Both are wired the same way, so the rest of the app doesn't change:
+
+| | Drizzle (default) | Prisma |
+| --- | --- | --- |
+| Client | [`src/db/index.ts`](src/db/index.ts) | `src/db/index.ts` (Prisma Client with the `pg` driver adapter) |
+| Auth tables | [`src/db/schema.ts`](src/db/schema.ts) | `prisma/schema.prisma` |
+| Migrations | [`drizzle/`](drizzle) | `prisma/migrations/` |
+| Better Auth adapter | [`src/db/adapter.ts`](src/db/adapter.ts) | `src/db/adapter.ts` |
+| App queries (admin stats, user search, promote) | [`src/db/queries.ts`](src/db/queries.ts) | `src/db/queries.ts`, same exports |
+
+The Prisma versions of these files live in [`orm/prisma/`](orm/prisma) until you run `pnpm env:setup`. Choosing Prisma copies them into place, swaps the packages and scripts, and deletes the Drizzle files. Choosing Drizzle deletes `orm/`. The scripts keep the same names either way (`db:migrate`, `db:generate`, `db:studio`, `auth:schema`).
+
 ## Using it in a new project
 
 1. Rebrand in [`src/lib/site.ts`](src/lib/site.ts) (name, description, repo link) and change the colors in [`src/app/globals.css`](src/app/globals.css).
-2. Add your app's tables to [`src/db/schema.ts`](src/db/schema.ts) or a new file, then run `pnpm db:generate && pnpm db:migrate`.
+2. Add your app's tables (to [`src/db/schema.ts`](src/db/schema.ts) with Drizzle, or `prisma/schema.prisma` with Prisma), then run `pnpm db:generate && pnpm db:migrate`.
 3. Protect pages and Server Actions with the helpers in [`src/lib/session.ts`](src/lib/session.ts):
 
 ```tsx
-// A protected Server Component. Wrap it in <Suspense> (Cache Components).
+// A protected Server Component (Drizzle shown). Wrap it in <Suspense> (Cache Components).
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { project } from "@/db/app-schema"; // your own table
@@ -169,7 +184,7 @@ If you change the auth config (for example, by adding a Better Auth plugin), run
 Browser ──► src/proxy.ts ──────────► fast cookie check, redirects signed-out users
    │
    ├──► /api/auth/[...all] ────────► Better Auth (sign-in, 2FA, passkeys, admin API)
-   │                                   └─ Drizzle ─► Postgres (users, sessions, rate limits)
+   │                                   └─ Drizzle or Prisma ─► Postgres (users, sessions, rate limits)
    │
    └──► Server Components ─────────► src/lib/session.ts  (the real authorization check)
 ```
@@ -189,7 +204,7 @@ src/
 │   └── api/auth/        Better Auth route handler
 ├── components/          auth forms, settings sections, admin table
 │   └── ui/              shadcn/ui components (button, dialog, dropdown-menu, …)
-├── db/                  Drizzle client and generated schema
+├── db/                  database client, auth adapter, app queries (+ Drizzle schema)
 ├── lib/
 │   ├── auth.ts          server auth config: the one file to tweak
 │   ├── auth-client.ts   browser client
@@ -197,8 +212,9 @@ src/
 │   ├── env.ts           validated environment
 │   └── email/           Resend sender and email templates
 └── proxy.ts             optimistic route protection
-drizzle/                 SQL migrations
-scripts/                 env:setup, admin:promote
+drizzle/                 SQL migrations (Drizzle)
+orm/prisma/              the Prisma option, removed by env:setup
+scripts/                 env:setup, admin:promote, smoke test
 ```
 
 ## Scripts
@@ -211,13 +227,14 @@ scripts/                 env:setup, admin:promote
 | `pnpm db:migrate` | Apply migrations |
 | `pnpm db:generate` | Create a migration after a schema change |
 | `pnpm db:studio` | Browse the database |
-| `pnpm auth:schema` | Regenerate the Drizzle schema from the auth config |
+| `pnpm auth:schema` | Regenerate the auth tables in the schema from the auth config |
 | `pnpm admin:promote you@example.com` | Make an existing user an admin |
-| `pnpm env:setup` | Create `.env` with a fresh secret |
+| `pnpm env:setup` | Create `.env` with a fresh secret and pick Drizzle or Prisma |
+| `pnpm test:smoke` | Sign up, sign in and use the admin page against a running server |
 
 ## Testing
 
-`pnpm test` runs the unit tests for validation, redirect safety, error messages and user-agent parsing. Every flow was also checked end to end in a real browser against Postgres: sign-up and verification, blocked unverified sign-in, wrong and correct passwords, 2FA setup and sign-in, passkey registration and sign-in, banning, impersonation, password reset, the open-redirect guard and rate limiting (the sixth sign-in attempt in a minute gets a 429).
+`pnpm test` runs the unit tests for validation, redirect safety, error messages and user-agent parsing. CI runs everything twice, once with Drizzle and once with Prisma: lint, types, tests, migrations, a schema drift check, a production build and `pnpm test:smoke` against the running app. Every flow was also checked end to end in a real browser against Postgres: sign-up and verification, blocked unverified sign-in, wrong and correct passwords, 2FA setup and sign-in, passkey registration and sign-in, banning, impersonation, password reset, the open-redirect guard and rate limiting (the sixth sign-in attempt in a minute gets a 429).
 
 ## License
 

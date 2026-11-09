@@ -11,7 +11,13 @@ concurrency:
 
 jobs:
   check:
+    name: check (${{ matrix.orm }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # Authforge ships both ORMs until `pnpm env:setup` picks one. CI checks both.
+        orm: [drizzle, prisma]
     services:
       postgres:
         image: postgres:16
@@ -30,6 +36,7 @@ jobs:
       BETTER_AUTH_SECRET: ci-only-secret-ci-only-secret-0123456789
       BETTER_AUTH_URL: http://localhost:3000
       PWNED_PASSWORD_CHECK: "false"
+      REQUIRE_EMAIL_VERIFICATION: "false"
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -38,6 +45,9 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Switch to Prisma
+        if: matrix.orm == 'prisma' && hashFiles('orm/prisma/prisma.config.ts') != ''
+        run: pnpm env:setup --orm prisma
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test
@@ -45,6 +55,17 @@ jobs:
         run: pnpm db:migrate
       - name: Check the schema matches the auth config
         run: |
+          git add -A
           pnpm auth:schema
-          git diff --exit-code src/db/schema.ts
+          git diff --exit-code
+      - name: Check the Prisma migrations match the schema
+        if: hashFiles('prisma/schema.prisma') != ''
+        run: |
+          pnpm exec prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma --exit-code \
+            || { echo "SQL Prisma would generate from an empty database:"; pnpm exec prisma migrate diff --from-empty --to-schema prisma/schema.prisma --script; exit 1; }
       - run: pnpm build
+      - name: Smoke test (sign up, sign in, admin)
+        run: |
+          pnpm start > server.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf -o /dev/null http://localhost:3000 && break; sleep 1; done
+          pnpm exec tsx scripts/smoke.ts || { cat server.log; exit 1; }
