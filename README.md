@@ -163,7 +163,7 @@ Browser ──► src/proxy.ts ──────────► fast cookie che
 
 - **Two layers of protection.** The proxy only checks that a session cookie exists, so redirects are instant. Every protected page, Server Action and admin query also calls `requireSession()` or `requireAdmin()`, which validates the session against the database. The admin API endpoints enforce the admin role on the server too.
 - **Cache Components.** Pages that read the session stream in behind `<Suspense>`, so the static shell (header, layout, skeletons) loads at once.
-- **Sessions** last 7 days, refresh daily and are cached in a signed cookie for 2 minutes. That keeps bans and revocations quick to take effect without a database hit on every request.
+- **Sessions** last 7 days and refresh daily. Every request checks the session in the database (no cookie cache), so signing out other devices, changing a password or banning a user takes effect immediately.
 - **Email verification** is required before password sign-in. Signing in unverified sends a fresh link. Clicking it verifies the email and signs the user in.
 
 ## Project structure
