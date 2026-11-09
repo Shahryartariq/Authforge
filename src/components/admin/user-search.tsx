@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Search } from "lucide-react";
-import { Input } from "@/components/ui/primitives";
+import { Input } from "@/components/ui/input";
 
 export function UserSearch({ initial }: { initial: string }) {
   const router = useRouter();

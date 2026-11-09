@@ -6,7 +6,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { PasswordInput } from "@/components/auth/password-input";
 import { Button } from "@/components/ui/button";
-import { Alert, Field, Input } from "@/components/ui/primitives";
+import { Input } from "@/components/ui/input";
+import { Field } from "@/components/ui/field";
+import { FormAlert } from "@/components/form-alert";
 import { authClient } from "@/lib/auth-client";
 import { authErrorMessage } from "@/lib/auth-errors";
 import { emailSchema, fieldErrors, resetPasswordSchema } from "@/lib/validation";
@@ -36,9 +38,9 @@ export function ForgotPasswordForm({ emailDelivery }: { emailDelivery: boolean }
         <p className="text-sm text-muted-foreground">Enter your email and we&apos;ll send you a reset link.</p>
       </div>
       {!emailDelivery ? (
-        <Alert>Email isn&apos;t set up on this deployment, so reset links can&apos;t be sent. Sign in with a passkey or ask an admin for help.</Alert>
+        <FormAlert>Email isn&apos;t set up on this deployment, so reset links can&apos;t be sent. Sign in with a passkey or ask an admin for help.</FormAlert>
       ) : sent ? (
-        <Alert tone="success">If an account exists for that email, a reset link is on its way. It expires in 1 hour.</Alert>
+        <FormAlert variant="success">If an account exists for that email, a reset link is on its way. It expires in 1 hour.</FormAlert>
       ) : (
         <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
           <Field label="Email" htmlFor="email" error={error}>
@@ -69,7 +71,7 @@ export function ResetPasswordForm() {
     return (
       <div className="flex flex-col gap-6">
         <h1 className="text-2xl font-semibold tracking-tight">Link expired</h1>
-        <Alert>This reset link is invalid or has expired. Request a new one to continue.</Alert>
+        <FormAlert>This reset link is invalid or has expired. Request a new one to continue.</FormAlert>
         <Link href="/forgot-password" className="text-sm font-medium underline-offset-4 hover:underline">
           Request a new link
         </Link>
@@ -98,7 +100,7 @@ export function ResetPasswordForm() {
         <p className="text-sm text-muted-foreground">You&apos;ll be signed out on all other devices.</p>
       </div>
       <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
-        {formError && <Alert>{formError}</Alert>}
+        {formError && <FormAlert>{formError}</FormAlert>}
         <Field label="New password" htmlFor="password" error={errors.password}>
           <PasswordInput id="password" name="password" autoComplete="new-password" showStrength aria-invalid={Boolean(errors.password)} />
         </Field>

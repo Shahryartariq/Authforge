@@ -2,11 +2,22 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { UserPlus, X } from "lucide-react";
+import { UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import { PasswordInput } from "@/components/auth/password-input";
 import { Button } from "@/components/ui/button";
-import { Card, Field, Input } from "@/components/ui/primitives";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Field } from "@/components/ui/field";
 import { authClient } from "@/lib/auth-client";
 import { authErrorMessage } from "@/lib/auth-errors";
 import { emailSchema, fieldErrors, passwordSchema } from "@/lib/validation";
@@ -39,25 +50,24 @@ export function CreateUser() {
     router.refresh();
   }
 
-  if (!open) {
-    return (
-      <Button onClick={() => setOpen(true)}>
-        <UserPlus /> Create user
-      </Button>
-    );
-  }
-
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 p-4 pt-[12vh]" role="dialog" aria-modal aria-labelledby="create-user-title">
-      <Card className="w-full max-w-md p-6">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 id="create-user-title" className="text-base font-semibold">
-            Create user
-          </h2>
-          <Button size="icon" variant="ghost" aria-label="Close" onClick={() => setOpen(false)}>
-            <X />
-          </Button>
-        </div>
+    <Dialog
+      open={open}
+      onOpenChange={(o) => {
+        setOpen(o);
+        if (!o) setErrors({});
+      }}
+    >
+      <DialogTrigger asChild>
+        <Button>
+          <UserPlus /> Create user
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Create user</DialogTitle>
+          <DialogDescription>The account is active right away, with a verified email.</DialogDescription>
+        </DialogHeader>
         <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
           <Field label="Name" htmlFor="cu-name" error={errors.name}>
             <Input id="cu-name" name="name" autoFocus />
@@ -65,25 +75,37 @@ export function CreateUser() {
           <Field label="Email" htmlFor="cu-email" error={errors.email}>
             <Input id="cu-email" name="email" type="email" />
           </Field>
-          <Field label="Temporary password" htmlFor="cu-password" error={errors.password} hint="Share it securely. They can change it in Settings.">
+          <Field
+            label="Temporary password"
+            htmlFor="cu-password"
+            error={errors.password}
+            hint="Share it securely. They can change it in Settings."
+          >
             <PasswordInput id="cu-password" name="password" autoComplete="new-password" />
           </Field>
           <Field label="Role" htmlFor="cu-role">
-            <select id="cu-role" name="role" defaultValue="user" className="h-10 rounded-lg border border-input bg-card px-3 text-sm outline-none focus-visible:ring-4 focus-visible:ring-ring">
+            <select
+              id="cu-role"
+              name="role"
+              defaultValue="user"
+              className="h-9 rounded-md border border-input bg-transparent px-3 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 dark:bg-input/30"
+            >
               <option value="user">User</option>
               <option value="admin">Admin</option>
             </select>
           </Field>
-          <div className="flex justify-end gap-2">
-            <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
-              Cancel
-            </Button>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button type="button" variant="outline">
+                Cancel
+              </Button>
+            </DialogClose>
             <Button type="submit" loading={pending}>
               Create user
             </Button>
-          </div>
+          </DialogFooter>
         </form>
-      </Card>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

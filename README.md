@@ -49,7 +49,8 @@ Every new app needs the same auth work: sign-up with email verification, passwor
 - **[Better Auth](https://better-auth.com)** with the two-factor, passkey, admin, last-login-method and HIBP plugins
 - **[Drizzle ORM](https://orm.drizzle.team)** and **PostgreSQL**: pure TypeScript, with no binary engine and fast serverless cold starts
 - **[Resend](https://resend.com)** for transactional email
-- **Tailwind CSS v4**, **Zod**, **Vitest** and GitHub Actions CI
+- **[shadcn/ui](https://ui.shadcn.com)** (Radix primitives) on **Tailwind CSS v4**. Add more components with `npx shadcn add <name>`
+- **Zod**, **Vitest** and GitHub Actions CI
 
 ## Quick start
 
@@ -174,7 +175,8 @@ src/
 │   ├── (auth)/          sign-in, sign-up, forgot/reset password, two-factor, verify-email
 │   ├── (app)/           dashboard, settings, admin (signed-in area)
 │   └── api/auth/        Better Auth route handler
-├── components/          auth forms, settings sections, admin table, UI primitives
+├── components/          auth forms, settings sections, admin table
+│   └── ui/              shadcn/ui components (button, dialog, dropdown-menu, …)
 ├── db/                  Drizzle client and generated schema
 ├── lib/
 │   ├── auth.ts          server auth config: the one file to tweak

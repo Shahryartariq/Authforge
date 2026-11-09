@@ -39,7 +39,7 @@ const features = [
   },
 ];
 
-const stack = ["Next.js 16", "TypeScript", "Better Auth", "Drizzle ORM", "PostgreSQL", "Resend", "Tailwind CSS"];
+const stack = ["Next.js 16", "TypeScript", "Better Auth", "Drizzle ORM", "PostgreSQL", "shadcn/ui", "Resend", "Tailwind CSS"];
 
 export default function Home() {
   return (
@@ -100,7 +100,7 @@ export default function Home() {
           <div className="grid gap-px overflow-hidden rounded-2xl border bg-border sm:grid-cols-2 lg:grid-cols-3">
             {features.map(({ icon: Icon, title, body }) => (
               <div key={title} className="flex flex-col gap-3 bg-card p-6">
-                <span className="flex size-9 items-center justify-center rounded-lg bg-accent-soft text-accent">
+                <span className="flex size-9 items-center justify-center rounded-lg bg-brand-soft text-brand">
                   <Icon className="size-4.5" />
                 </span>
                 <h2 className="font-semibold tracking-tight">{title}</h2>

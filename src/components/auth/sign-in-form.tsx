@@ -7,7 +7,10 @@ import { KeyRound } from "lucide-react";
 import { PasswordInput } from "@/components/auth/password-input";
 import { SocialButtons } from "@/components/auth/social-buttons";
 import { Button } from "@/components/ui/button";
-import { Alert, Field, Input, Separator } from "@/components/ui/primitives";
+import { Input } from "@/components/ui/input";
+import { Field } from "@/components/ui/field";
+import { FormAlert } from "@/components/form-alert";
+import { OrDivider } from "@/components/auth/or-divider";
 import { authClient } from "@/lib/auth-client";
 import { authErrorMessage } from "@/lib/auth-errors";
 import type { EnabledProviders } from "@/lib/env";
@@ -91,11 +94,11 @@ export function SignInForm({ providers }: { providers: EnabledProviders }) {
         Sign in with a passkey
       </Button>
 
-      <Separator label="or" />
+      <OrDivider />
 
       <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
-        {formError && <Alert>{formError}</Alert>}
-        {notice && <Alert tone="success">{notice}</Alert>}
+        {formError && <FormAlert>{formError}</FormAlert>}
+        {notice && <FormAlert variant="success">{notice}</FormAlert>}
 
         <Field label="Email" htmlFor="email" error={errors.email}>
           <Input

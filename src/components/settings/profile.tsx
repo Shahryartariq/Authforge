@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Section } from "@/components/settings/section";
 import { Button } from "@/components/ui/button";
-import { Field, Input } from "@/components/ui/primitives";
+import { Input } from "@/components/ui/input";
+import { Field } from "@/components/ui/field";
 import { authClient } from "@/lib/auth-client";
 import { authErrorMessage } from "@/lib/auth-errors";
 

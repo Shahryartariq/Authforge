@@ -5,7 +5,11 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Alert, Field, Input } from "@/components/ui/primitives";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Field } from "@/components/ui/field";
+import { FormAlert } from "@/components/form-alert";
 import { authClient } from "@/lib/auth-client";
 import { authErrorMessage } from "@/lib/auth-errors";
 import { safeRedirect } from "@/lib/utils";
@@ -49,7 +53,7 @@ export function TwoFactorForm() {
 
   return (
     <div className="flex flex-col gap-6">
-      <span className="flex size-11 items-center justify-center rounded-full bg-accent-soft text-accent">
+      <span className="flex size-11 items-center justify-center rounded-full bg-brand-soft text-brand">
         <ShieldCheck className="size-5" />
       </span>
       <div className="flex flex-col gap-1.5">
@@ -62,7 +66,7 @@ export function TwoFactorForm() {
       </div>
 
       <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate key={mode}>
-        {error && <Alert>{error}</Alert>}
+        {error && <FormAlert>{error}</FormAlert>}
         <Field label={mode === "totp" ? "Authentication code" : "Backup code"} htmlFor="code">
           <Input
             id="code"
@@ -75,10 +79,12 @@ export function TwoFactorForm() {
             className="font-mono tracking-[0.3em]"
           />
         </Field>
-        <label className="flex items-center gap-2 text-sm text-muted-foreground">
-          <input type="checkbox" name="trustDevice" className="size-4 accent-[var(--accent)]" />
-          Trust this device for 30 days
-        </label>
+        <div className="flex items-center gap-2">
+          <Checkbox id="trustDevice" name="trustDevice" />
+          <Label htmlFor="trustDevice" className="font-normal text-muted-foreground">
+            Trust this device for 30 days
+          </Label>
+        </div>
         <Button type="submit" loading={pending}>
           Verify
         </Button>

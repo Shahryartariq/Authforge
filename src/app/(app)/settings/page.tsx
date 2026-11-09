@@ -8,7 +8,7 @@ import { PasswordSection } from "@/components/settings/password";
 import { ProfileForm } from "@/components/settings/profile";
 import { SessionsSection } from "@/components/settings/sessions";
 import { TwoFactorSection } from "@/components/settings/two-factor";
-import { Skeleton } from "@/components/ui/primitives";
+import { Skeleton } from "@/components/ui/skeleton";
 import { auth } from "@/lib/auth";
 import { emailFeatures, providers } from "@/lib/env";
 import { requireSession } from "@/lib/session";

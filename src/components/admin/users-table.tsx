@@ -1,12 +1,41 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Ban, Eye, LogOut, MoreHorizontal, ShieldCheck, ShieldOff, Trash2, UserCheck } from "lucide-react";
 import { toast } from "sonner";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { Badge, Card } from "@/components/ui/primitives";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Field } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 import { authClient } from "@/lib/auth-client";
 import { authErrorMessage } from "@/lib/auth-errors";
 import { cn, initials } from "@/lib/utils";
@@ -38,7 +67,7 @@ export function UsersTable({ users, currentUserId, page, pageCount, total, query
   const href = (p: number) => `/admin?${new URLSearchParams({ ...(query ? { q: query } : {}), page: String(p) })}`;
 
   return (
-    <Card className="overflow-hidden">
+    <Card className="gap-0 overflow-hidden py-0">
       <div className="overflow-x-auto">
         <table className="w-full min-w-[720px] text-sm">
           <thead className="border-b bg-muted/50 text-left text-xs uppercase tracking-wide text-muted-foreground">
@@ -62,7 +91,7 @@ export function UsersTable({ users, currentUserId, page, pageCount, total, query
               <tr key={u.id} className={cn(u.banned && "bg-destructive-soft/40")}>
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-3">
-                    <span className="flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-accent-soft text-[11px] font-semibold text-accent">
+                    <span className="flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-brand-soft text-[11px] font-semibold text-brand">
                       {u.image ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={u.image} alt="" className="size-full object-cover" referrerPolicy="no-referrer" />
@@ -79,22 +108,22 @@ export function UsersTable({ users, currentUserId, page, pageCount, total, query
                   </div>
                 </td>
                 <td className="px-4 py-3">
-                  <Badge tone={u.role.includes("admin") ? "accent" : "neutral"} className="capitalize">
+                  <Badge variant={u.role.includes("admin") ? "brand" : "secondary"} className="capitalize">
                     {u.role}
                   </Badge>
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex flex-wrap gap-1">
                     {u.banned ? (
-                      <Badge tone="danger" title={u.banReason ?? undefined}>
+                      <Badge variant="destructive" title={u.banReason ?? undefined}>
                         Banned{u.banExpires ? ` until ${new Date(u.banExpires).toLocaleDateString("en")}` : ""}
                       </Badge>
                     ) : u.emailVerified ? (
-                      <Badge tone="success">Verified</Badge>
+                      <Badge variant="success">Verified</Badge>
                     ) : (
                       <Badge>Unverified</Badge>
                     )}
-                    {u.twoFactorEnabled && <Badge tone="accent">2FA</Badge>}
+                    {u.twoFactorEnabled && <Badge variant="brand">2FA</Badge>}
                   </div>
                 </td>
                 <td className="whitespace-nowrap px-4 py-3 text-muted-foreground">
@@ -138,128 +167,199 @@ export function UsersTable({ users, currentUserId, page, pageCount, total, query
 
 function RowActions({ user }: { user: AdminUserRow }) {
   const router = useRouter();
-  const [open, setOpen] = useState(false);
   const [pending, setPending] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
+  const [dialog, setDialog] = useState<"ban" | "delete" | null>(null);
   const isAdmin = user.role.includes("admin");
 
-  useEffect(() => {
-    if (!open) return;
-    const close = (e: MouseEvent | KeyboardEvent) => {
-      if (e instanceof KeyboardEvent ? e.key === "Escape" : !ref.current?.contains(e.target as Node)) setOpen(false);
-    };
-    document.addEventListener("mousedown", close);
-    document.addEventListener("keydown", close);
-    return () => {
-      document.removeEventListener("mousedown", close);
-      document.removeEventListener("keydown", close);
-    };
-  }, [open]);
-
   async function run(action: () => Promise<{ error: unknown }>, success: string, after?: () => void) {
-    setOpen(false);
     setPending(true);
     const res = await action();
     setPending(false);
-    if (res.error) return toast.error(authErrorMessage(res.error as { message?: string }));
+    if (res.error) {
+      toast.error(authErrorMessage(res.error as { message?: string }));
+      return false;
+    }
     toast.success(success);
     if (after) after();
     else router.refresh();
+    return true;
   }
 
-  const items = [
-    isAdmin
-      ? {
-          icon: ShieldOff,
-          label: "Remove admin role",
-          onClick: () => run(() => authClient.admin.setRole({ userId: user.id, role: "user" }), `${user.name} is now a user`),
-        }
-      : {
-          icon: ShieldCheck,
-          label: "Make admin",
-          onClick: () => run(() => authClient.admin.setRole({ userId: user.id, role: "admin" }), `${user.name} is now an admin`),
-        },
-    user.banned
-      ? {
-          icon: UserCheck,
-          label: "Unban",
-          onClick: () => run(() => authClient.admin.unbanUser({ userId: user.id }), `${user.name} was unbanned`),
-        }
-      : {
-          icon: Ban,
-          label: "Ban…",
-          onClick: () => {
-            const reason = prompt(`Why are you banning ${user.email}?`, "Violated terms of service");
-            if (reason === null) return setOpen(false);
-            const days = prompt("Ban for how many days? Leave empty for a permanent ban.", "");
-            if (days === null) return setOpen(false);
-            const n = Number(days);
-            return run(
-              () =>
-                authClient.admin.banUser({
-                  userId: user.id,
-                  banReason: reason || undefined,
-                  banExpiresIn: days && n > 0 ? Math.round(n * 86400) : undefined,
-                }),
-              `${user.name} was banned and signed out`,
-            );
-          },
-        },
-    {
-      icon: LogOut,
-      label: "Sign out everywhere",
-      onClick: () => run(() => authClient.admin.revokeUserSessions({ userId: user.id }), "All sessions revoked"),
-    },
-    ...(!isAdmin && !user.banned
-      ? [
-          {
-            icon: Eye,
-            label: "Impersonate",
-            onClick: () =>
-              run(
-                () => authClient.admin.impersonateUser({ userId: user.id }),
-                `Now viewing as ${user.email}`,
-                () => {
-                  router.push("/dashboard");
-                  router.refresh();
-                },
-              ),
-          },
-        ]
-      : []),
-    {
-      icon: Trash2,
-      label: "Delete user",
-      danger: true,
-      onClick: () => {
-        if (!confirm(`Permanently delete ${user.email}? This can't be undone.`)) return setOpen(false);
-        return run(() => authClient.admin.removeUser({ userId: user.id }), `${user.email} was deleted`);
-      },
-    },
-  ];
-
   return (
-    <div className="relative inline-block text-left" ref={ref}>
-      <Button size="icon" variant="ghost" aria-label={`Actions for ${user.email}`} aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen((o) => !o)} loading={pending}>
-        {!pending && <MoreHorizontal />}
-      </Button>
-      {open && (
-        <div role="menu" className="absolute right-0 z-50 mt-1 w-52 overflow-hidden rounded-xl border bg-card p-1 shadow-lg">
-          {items.map((item) => (
-            <button
-              key={item.label}
-              role="menuitem"
-              onClick={item.onClick}
-              className={cn(
-                "flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm hover:bg-muted",
-                "danger" in item && item.danger && "text-destructive",
-              )}
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button size="icon" variant="ghost" aria-label={`Actions for ${user.email}`} loading={pending}>
+            {!pending && <MoreHorizontal />}
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-52">
+          {isAdmin ? (
+            <DropdownMenuItem
+              onSelect={() =>
+                run(() => authClient.admin.setRole({ userId: user.id, role: "user" }), `${user.name} is now a user`)
+              }
             >
-              <item.icon className="size-4" /> {item.label}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
+              <ShieldOff /> Remove admin role
+            </DropdownMenuItem>
+          ) : (
+            <DropdownMenuItem
+              onSelect={() =>
+                run(() => authClient.admin.setRole({ userId: user.id, role: "admin" }), `${user.name} is now an admin`)
+              }
+            >
+              <ShieldCheck /> Make admin
+            </DropdownMenuItem>
+          )}
+          {user.banned ? (
+            <DropdownMenuItem
+              onSelect={() => run(() => authClient.admin.unbanUser({ userId: user.id }), `${user.name} was unbanned`)}
+            >
+              <UserCheck /> Unban
+            </DropdownMenuItem>
+          ) : (
+            <DropdownMenuItem onSelect={() => setDialog("ban")}>
+              <Ban /> Ban…
+            </DropdownMenuItem>
+          )}
+          <DropdownMenuItem
+            onSelect={() => run(() => authClient.admin.revokeUserSessions({ userId: user.id }), "All sessions revoked")}
+          >
+            <LogOut /> Sign out everywhere
+          </DropdownMenuItem>
+          {!isAdmin && !user.banned && (
+            <DropdownMenuItem
+              onSelect={() =>
+                run(
+                  () => authClient.admin.impersonateUser({ userId: user.id }),
+                  `Now viewing as ${user.email}`,
+                  () => {
+                    router.push("/dashboard");
+                    router.refresh();
+                  },
+                )
+              }
+            >
+              <Eye /> Impersonate
+            </DropdownMenuItem>
+          )}
+          <DropdownMenuSeparator />
+          <DropdownMenuItem variant="destructive" onSelect={() => setDialog("delete")}>
+            <Trash2 /> Delete user
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <BanDialog
+        user={user}
+        open={dialog === "ban"}
+        onOpenChange={(o) => setDialog(o ? "ban" : null)}
+        onConfirm={async (reason, days) => {
+          const done = await run(
+            () =>
+              authClient.admin.banUser({
+                userId: user.id,
+                banReason: reason || undefined,
+                banExpiresIn: days ? days * 86400 : undefined,
+              }),
+            `${user.name} was banned and signed out`,
+          );
+          if (done) setDialog(null);
+        }}
+        pending={pending}
+      />
+
+      <AlertDialog open={dialog === "delete"} onOpenChange={(o) => setDialog(o ? "delete" : null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete {user.email}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This permanently deletes the account, its sessions, passkeys and linked sign-ins. It can&apos;t be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              onClick={() => run(() => authClient.admin.removeUser({ userId: user.id }), `${user.email} was deleted`)}
+            >
+              Delete user
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
+  );
+}
+
+const BAN_LENGTHS = [
+  { label: "1 day", days: 1 },
+  { label: "7 days", days: 7 },
+  { label: "30 days", days: 30 },
+  { label: "Permanent", days: 0 },
+];
+
+function BanDialog({
+  user,
+  open,
+  onOpenChange,
+  onConfirm,
+  pending,
+}: {
+  user: AdminUserRow;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onConfirm: (reason: string, days: number) => void;
+  pending: boolean;
+}) {
+  const [days, setDays] = useState(7);
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <form
+          className="grid gap-4"
+          onSubmit={(e) => {
+            e.preventDefault();
+            onConfirm(String(new FormData(e.currentTarget).get("reason") ?? "").trim(), days);
+          }}
+        >
+          <DialogHeader>
+            <DialogTitle>Ban {user.email}</DialogTitle>
+            <DialogDescription>They&apos;re signed out everywhere and can&apos;t sign in until the ban ends.</DialogDescription>
+          </DialogHeader>
+          <Field label="Reason" htmlFor="ban-reason" hint="Shown to admins only.">
+            <Input id="ban-reason" name="reason" defaultValue="Violated terms of service" />
+          </Field>
+          <div className="grid gap-2">
+            <span className="text-sm font-medium">Length</span>
+            <div className="grid grid-cols-4 gap-2" role="radiogroup" aria-label="Ban length">
+              {BAN_LENGTHS.map((b) => (
+                <Button
+                  key={b.label}
+                  type="button"
+                  role="radio"
+                  aria-checked={days === b.days}
+                  variant={days === b.days ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setDays(b.days)}
+                >
+                  {b.label}
+                </Button>
+              ))}
+            </div>
+          </div>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button type="button" variant="outline">
+                Cancel
+              </Button>
+            </DialogClose>
+            <Button type="submit" variant="destructive" loading={pending}>
+              Ban user
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }

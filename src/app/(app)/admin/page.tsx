@@ -4,7 +4,8 @@ import { count, desc, eq, ilike, or, sql } from "drizzle-orm";
 import { CreateUser } from "@/components/admin/create-user";
 import { UserSearch } from "@/components/admin/user-search";
 import { UsersTable, type AdminUserRow } from "@/components/admin/users-table";
-import { Card, Skeleton } from "@/components/ui/primitives";
+import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { db } from "@/db";
 import { user } from "@/db/schema";
 import { requireAdmin } from "@/lib/session";
@@ -64,7 +65,7 @@ async function Stats() {
   return (
     <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
       {stats.map((s) => (
-        <Card key={s.label} className="p-4">
+        <Card key={s.label} className="gap-1 p-4">
           <p className="text-xs text-muted-foreground">{s.label}</p>
           <p className="mt-1 text-2xl font-semibold tabular-nums">{s.value}</p>
         </Card>

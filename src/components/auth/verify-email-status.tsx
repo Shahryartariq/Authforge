@@ -5,7 +5,9 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { CircleCheck, CircleX } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { Alert, Field, Input } from "@/components/ui/primitives";
+import { Input } from "@/components/ui/input";
+import { Field } from "@/components/ui/field";
+import { FormAlert } from "@/components/form-alert";
 import { authClient } from "@/lib/auth-client";
 import { safeRedirect } from "@/lib/utils";
 import { emailSchema } from "@/lib/validation";
@@ -63,7 +65,7 @@ function ResendVerification({ next }: { next: string }) {
         <p className="text-sm text-muted-foreground">Verification links work once and expire after 1 hour. Get a new one below.</p>
       </div>
       {state === "sent" ? (
-        <Alert tone="success">If that email needs verifying, a new link is on its way.</Alert>
+        <FormAlert variant="success">If that email needs verifying, a new link is on its way.</FormAlert>
       ) : (
         <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
           <Field label="Email" htmlFor="email" error={error}>
