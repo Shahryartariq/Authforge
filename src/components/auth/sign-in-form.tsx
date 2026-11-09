@@ -33,6 +33,7 @@ export function SignInForm({ providers }: { providers: EnabledProviders }) {
 /**
  * The sign-in form itself, shared by the /sign-in page and the sign-in popup.
  * `showHeader={false}` lets a dialog render its own accessible title.
+ * `onNavigate` runs just before a successful sign-in leaves the page.
  */
 export function SignInPanel({
   providers,
@@ -40,12 +41,14 @@ export function SignInPanel({
   initialError = "",
   showHeader = true,
   passkeyAutofill = false,
+  onNavigate,
 }: {
   providers: EnabledProviders;
   callbackURL: string;
   initialError?: string;
   showHeader?: boolean;
   passkeyAutofill?: boolean;
+  onNavigate?: () => void;
 }) {
   const router = useRouter();
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -92,6 +95,7 @@ export function SignInPanel({
     }
     // With 2FA on, the client plugin redirects to /two-factor instead.
     if (data && "twoFactorRedirect" in data && data.twoFactorRedirect) return;
+    onNavigate?.();
     router.push(callbackURL);
     router.refresh();
   }
@@ -104,6 +108,7 @@ export function SignInPanel({
       setPending(null);
       return setFormError(authErrorMessage(error, "Passkey sign-in was cancelled or failed."));
     }
+    onNavigate?.();
     router.push(callbackURL);
     router.refresh();
   }
