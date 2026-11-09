@@ -12,7 +12,7 @@ import { Field } from "@/components/ui/field";
 import { FormAlert } from "@/components/form-alert";
 import { OrDivider } from "@/components/auth/or-divider";
 import { authClient } from "@/lib/auth-client";
-import { authErrorMessage } from "@/lib/auth-errors";
+import { authErrorMessage, oauthErrorMessage } from "@/lib/auth-errors";
 import type { EnabledProviders } from "@/lib/env";
 import { safeRedirect } from "@/lib/utils";
 import { fieldErrors, signInSchema } from "@/lib/validation";
@@ -24,7 +24,7 @@ export function SignInForm({ providers }: { providers: EnabledProviders }) {
     <SignInPanel
       providers={providers}
       callbackURL={safeRedirect(params.get("callbackURL"))}
-      initialError={params.get("error") ? "Sign-in failed. Please try again." : ""}
+      initialError={oauthErrorMessage(params.get("error"))}
       passkeyAutofill
     />
   );
