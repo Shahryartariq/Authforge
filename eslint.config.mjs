@@ -12,6 +12,7 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    "orm/**", // the Prisma option, until `pnpm env:setup` picks an ORM
   ]),
 ]);
 

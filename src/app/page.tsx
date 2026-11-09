@@ -41,7 +41,7 @@ const features = [
   },
 ];
 
-const stack = ["Next.js 16", "TypeScript", "Better Auth", "Drizzle ORM", "PostgreSQL", "shadcn/ui", "Resend", "Tailwind CSS"];
+const stack = ["Next.js 16", "TypeScript", "Better Auth", "Drizzle or Prisma", "PostgreSQL", "shadcn/ui", "Resend", "Tailwind CSS"];
 
 export default function Home() {
   return (
