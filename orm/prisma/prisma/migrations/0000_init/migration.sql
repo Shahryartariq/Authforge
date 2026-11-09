@@ -1,6 +1,9 @@
+-- CreateSchema
+CREATE SCHEMA IF NOT EXISTS "public";
+
 -- CreateTable
 CREATE TABLE "user" (
-    "id" UUID NOT NULL DEFAULT pg_catalog.gen_random_uuid(),
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "name" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "emailVerified" BOOLEAN NOT NULL DEFAULT false,
@@ -18,7 +21,7 @@ CREATE TABLE "user" (
 
 -- CreateTable
 CREATE TABLE "session" (
-    "id" UUID NOT NULL DEFAULT pg_catalog.gen_random_uuid(),
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "expiresAt" TIMESTAMP(3) NOT NULL,
     "token" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -33,7 +36,7 @@ CREATE TABLE "session" (
 
 -- CreateTable
 CREATE TABLE "account" (
-    "id" UUID NOT NULL DEFAULT pg_catalog.gen_random_uuid(),
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "accountId" TEXT NOT NULL,
     "providerId" TEXT NOT NULL,
     "userId" UUID NOT NULL,
@@ -52,7 +55,7 @@ CREATE TABLE "account" (
 
 -- CreateTable
 CREATE TABLE "verification" (
-    "id" UUID NOT NULL DEFAULT pg_catalog.gen_random_uuid(),
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "identifier" TEXT NOT NULL,
     "value" TEXT NOT NULL,
     "expiresAt" TIMESTAMP(3) NOT NULL,
@@ -64,7 +67,7 @@ CREATE TABLE "verification" (
 
 -- CreateTable
 CREATE TABLE "twoFactor" (
-    "id" UUID NOT NULL DEFAULT pg_catalog.gen_random_uuid(),
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "secret" TEXT NOT NULL,
     "backupCodes" TEXT NOT NULL,
     "userId" UUID NOT NULL,
@@ -77,7 +80,7 @@ CREATE TABLE "twoFactor" (
 
 -- CreateTable
 CREATE TABLE "passkey" (
-    "id" UUID NOT NULL DEFAULT pg_catalog.gen_random_uuid(),
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "name" TEXT,
     "publicKey" TEXT NOT NULL,
     "userId" UUID NOT NULL,
@@ -94,7 +97,7 @@ CREATE TABLE "passkey" (
 
 -- CreateTable
 CREATE TABLE "rateLimit" (
-    "id" UUID NOT NULL DEFAULT pg_catalog.gen_random_uuid(),
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "key" TEXT NOT NULL,
     "count" INTEGER NOT NULL,
     "lastRequest" BIGINT NOT NULL,

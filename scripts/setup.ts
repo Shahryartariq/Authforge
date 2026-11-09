@@ -96,7 +96,7 @@ function switchToPrisma() {
   pkg.devDependencies = sortKeys(pkg.devDependencies);
   Object.assign(pkg.scripts, {
     postinstall: "prisma generate",
-    "auth:schema": "auth generate --config src/lib/auth.ts --output prisma/schema.prisma --yes",
+    "auth:schema": "auth generate --config src/lib/auth.ts --output prisma/schema.prisma --yes && tsx scripts/prisma-schema.ts",
     "db:generate": "prisma migrate dev --create-only",
     "db:migrate": "prisma migrate deploy",
     "db:studio": "prisma studio",
