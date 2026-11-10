@@ -252,6 +252,10 @@ Emails go to `.e2e/outbox.jsonl` (set by `EMAIL_OUTBOX_FILE`), so tests follow r
 
 CI also runs lint, types, unit tests, migrations, a schema drift check, a production build and the smoke test twice: once with Drizzle and once with Prisma.
 
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md).
+
 ## License
 
 [MIT](LICENSE). Use it for anything.

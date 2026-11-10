@@ -137,7 +137,10 @@ pnpm env:setup && pnpm dev`}
       <footer className="border-t">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-2 px-4 py-6 text-xs text-muted-foreground sm:px-6">
           <span>
-            {site.name} · MIT licensed
+            {site.name} · MIT licensed ·{" "}
+            <Link href="/privacy" className="hover:text-foreground hover:underline">
+              Privacy
+            </Link>
           </span>
           <span>
             Built by{" "}
