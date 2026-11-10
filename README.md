@@ -230,11 +230,27 @@ scripts/                 env:setup, admin:promote, smoke test
 | `pnpm auth:schema` | Regenerate the auth tables in the schema from the auth config |
 | `pnpm admin:promote you@example.com` | Make an existing user an admin |
 | `pnpm env:setup` | Create `.env` with a fresh secret and pick Drizzle or Prisma |
+| `pnpm test:e2e` | Browser tests (Playwright) for every flow; see [Testing](#testing) |
 | `pnpm test:smoke` | Sign up, sign in and use the admin page against a running server |
 
 ## Testing
 
-`pnpm test` runs the unit tests for validation, redirect safety, error messages and user-agent parsing. CI runs everything twice, once with Drizzle and once with Prisma: lint, types, tests, migrations, a schema drift check, a production build and `pnpm test:smoke` against the running app. Every flow was also checked end to end in a real browser against Postgres: sign-up and verification, blocked unverified sign-in, wrong and correct passwords, 2FA setup and sign-in, passkey registration and sign-in, banning, impersonation, password reset, the open-redirect guard and rate limiting (the sixth sign-in attempt in a minute gets a 429).
+Three layers, all in CI:
+
+| Command | What it checks |
+| --- | --- |
+| `pnpm test` | Unit tests: validation, redirect safety, error messages, the admin-email rule, user-agent parsing |
+| `pnpm test:e2e` | 33 Playwright tests in a real browser against Postgres ([`tests/e2e`](tests/e2e)) |
+| `pnpm test:smoke` | A quick sign-up, sign-in and admin check against any running server |
+
+The browser tests build the app twice and run against both builds:
+
+- **Verification on**, like a real app: sign-up and the emailed link, blocked unverified sign-in, password reset, delete-by-email, profile and password changes, other devices signed out, TOTP 2FA with trusted devices and one-time backup codes, passkeys (with a virtual authenticator), the sign-in popup, Google and GitHub redirects, and the admin panel (search, roles, 7-day ban that ends open sessions at once, impersonation, create and delete).
+- **Demo mode**, like the live site: instant sign-up, immediate account deletion, rate limiting (the sixth sign-in attempt in a minute gets a 429) and security headers.
+
+Emails go to `.e2e/outbox.jsonl` (set by `EMAIL_OUTBOX_FILE`), so tests follow real links. Each test signs up its own users, so they run in parallel on a database that already has data. Run them locally with `pnpm exec playwright install chromium` once, then `pnpm test:e2e`.
+
+CI also runs lint, types, unit tests, migrations, a schema drift check, a production build and the smoke test twice: once with Drizzle and once with Prisma.
 
 ## License
 

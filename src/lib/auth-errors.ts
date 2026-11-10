@@ -16,6 +16,7 @@ const MESSAGES: Record<string, string> = {
   INVALID_TOKEN: "This link is invalid or has expired. Request a new one.",
   SESSION_EXPIRED: "For security, please sign in again to do this.",
   FAILED_TO_UNLINK_LAST_ACCOUNT: "You can't remove your only sign-in method.",
+  CHALLENGE_NOT_FOUND: "Your passkey sign-in timed out. Please try again.",
 };
 
 /** Maps a Better Auth error to a message a user can act on. */
@@ -24,4 +25,26 @@ export function authErrorMessage(error: AuthError, fallback = "Something went wr
   if (error.status === 429) return "Too many attempts. Please wait a minute and try again.";
   if (error.code && MESSAGES[error.code]) return MESSAGES[error.code];
   return error.message || fallback;
+}
+
+/**
+ * Google and GitHub sign-in errors arrive as `?error=<code>` on /sign-in.
+ * Codes come from Better Auth's OAuth callback.
+ */
+const OAUTH_MESSAGES: Record<string, string> = {
+  account_not_linked:
+    "An account with this email already exists. Sign in with your password, then connect Google or GitHub in Settings.",
+  email_not_found:
+    "We couldn't get an email address from that account. On GitHub, add a verified email and try again.",
+  email_not_verified: "That account's email isn't verified with the provider yet. Verify it there, then try again.",
+  email_does_not_match: "That account uses a different email address than yours.",
+  account_already_linked_to_different_user: "That account is already connected to a different user.",
+  BANNED_USER: MESSAGES.BANNED_USER,
+  signup_disabled: "Sign-up is closed. Ask an admin for an account.",
+};
+
+/** Message for an `?error=` code on /sign-in, or "" when there is none. */
+export function oauthErrorMessage(code: string | null | undefined) {
+  if (!code) return "";
+  return OAUTH_MESSAGES[code] ?? "Sign-in failed. Please try again.";
 }

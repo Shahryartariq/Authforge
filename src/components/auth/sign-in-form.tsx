@@ -12,7 +12,7 @@ import { Field } from "@/components/ui/field";
 import { FormAlert } from "@/components/form-alert";
 import { OrDivider } from "@/components/auth/or-divider";
 import { authClient } from "@/lib/auth-client";
-import { authErrorMessage } from "@/lib/auth-errors";
+import { authErrorMessage, oauthErrorMessage } from "@/lib/auth-errors";
 import type { EnabledProviders } from "@/lib/env";
 import { safeRedirect } from "@/lib/utils";
 import { fieldErrors, signInSchema } from "@/lib/validation";
@@ -24,7 +24,7 @@ export function SignInForm({ providers }: { providers: EnabledProviders }) {
     <SignInPanel
       providers={providers}
       callbackURL={safeRedirect(params.get("callbackURL"))}
-      initialError={params.get("error") ? "Sign-in failed. Please try again." : ""}
+      initialError={oauthErrorMessage(params.get("error"))}
       passkeyAutofill
     />
   );
@@ -103,7 +103,13 @@ export function SignInPanel({
   async function passkeySignIn() {
     setFormError("");
     setPending("passkey");
-    const { error } = await authClient.signIn.passkey();
+    let { error } = await authClient.signIn.passkey();
+    // On /sign-in, passkey autofill asks for its own challenge as the page loads,
+    // and the server keeps one challenge per browser. A click in that first
+    // moment can lose the race, so try once more.
+    if (error && "code" in error && error.code === "CHALLENGE_NOT_FOUND") {
+      ({ error } = await authClient.signIn.passkey());
+    }
     if (error) {
       setPending(null);
       return setFormError(authErrorMessage(error, "Passkey sign-in was cancelled or failed."));

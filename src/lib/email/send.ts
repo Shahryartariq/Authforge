@@ -1,3 +1,5 @@
+import { appendFile, mkdir } from "node:fs/promises";
+import { dirname } from "node:path";
 import { Resend } from "resend";
 import { env } from "@/lib/env";
 
@@ -8,10 +10,16 @@ const resend = env.RESEND_API_KEY ? new Resend(env.RESEND_API_KEY) : null;
 /**
  * Sends a transactional email through Resend.
  * Without RESEND_API_KEY (local dev), the email is printed to the console
- * so every flow still works end to end.
+ * so every flow still works end to end. The browser tests set
+ * EMAIL_OUTBOX_FILE to collect emails in a file instead.
  */
 export async function sendEmail({ to, subject, html, text }: Email) {
   if (!resend) {
+    if (env.EMAIL_OUTBOX_FILE) {
+      await mkdir(dirname(env.EMAIL_OUTBOX_FILE), { recursive: true });
+      await appendFile(env.EMAIL_OUTBOX_FILE, `${JSON.stringify({ to, subject, text })}\n`);
+      return;
+    }
     if (env.NODE_ENV === "production") {
       console.error(`[email] RESEND_API_KEY is not set; "${subject}" to ${to} was not sent.`);
       return;
