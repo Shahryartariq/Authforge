@@ -21,7 +21,7 @@ import { Field } from "@/components/ui/field";
 import { authClient } from "@/lib/auth-client";
 import { authErrorMessage } from "@/lib/auth-errors";
 import { emailSchema, fieldErrors, passwordSchema } from "@/lib/validation";
-import { z } from "zod";
+import { z } from "@/lib/zod";
 
 const schema = z.object({
   name: z.string().trim().min(1, "Enter a name"),

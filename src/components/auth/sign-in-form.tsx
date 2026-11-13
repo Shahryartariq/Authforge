@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { KeyRound } from "lucide-react";
 import { PasswordInput } from "@/components/auth/password-input";
 import { SocialButtons } from "@/components/auth/social-buttons";
@@ -14,17 +14,21 @@ import { OrDivider } from "@/components/auth/or-divider";
 import { authClient } from "@/lib/auth-client";
 import { authErrorMessage, oauthErrorMessage } from "@/lib/auth-errors";
 import type { EnabledProviders } from "@/lib/env";
+import { useQueryParams } from "@/lib/use-query-params";
 import { safeRedirect } from "@/lib/utils";
 import { fieldErrors, signInSchema } from "@/lib/validation";
 
 /** The /sign-in page: reads callbackURL and error from the URL. */
 export function SignInForm({ providers }: { providers: EnabledProviders }) {
-  const params = useSearchParams();
+  const params = useQueryParams();
+  const error = params.get("error");
   return (
     <SignInPanel
+      // A new error from the URL (read after hydration) starts a fresh form.
+      key={error ?? ""}
       providers={providers}
       callbackURL={safeRedirect(params.get("callbackURL"))}
-      initialError={oauthErrorMessage(params.get("error"))}
+      initialError={oauthErrorMessage(error)}
       passkeyAutofill
     />
   );
@@ -104,10 +108,12 @@ export function SignInPanel({
     setFormError("");
     setPending("passkey");
     let { error } = await authClient.signIn.passkey();
-    // On /sign-in, passkey autofill asks for its own challenge as the page loads,
-    // and the server keeps one challenge per browser. A click in that first
-    // moment can lose the race, so try once more.
-    if (error && "code" in error && error.code === "CHALLENGE_NOT_FOUND") {
+    // The server keeps one passkey challenge per browser. Passkey autofill on
+    // /sign-in asks for its own as the page loads, and a request still in flight
+    // from the previous page can land late, so a click can lose the race: the
+    // challenge is then missing or replaced. Try once more. (A cancelled prompt
+    // fails in the browser and never gets here.)
+    if (error && "code" in error && (error.code === "CHALLENGE_NOT_FOUND" || error.code === "AUTHENTICATION_FAILED")) {
       ({ error } = await authClient.signIn.passkey());
     }
     if (error) {
