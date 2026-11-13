@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
-import { SignInPanel } from "@/components/auth/sign-in-form";
 import {
   Dialog,
   DialogContent,
@@ -11,7 +11,23 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { EnabledProviders } from "@/lib/env";
+
+// The sign-in form (auth client, passkeys, validation) is only downloaded when
+// someone opens the popup, or starts to: hover and focus preload it. Pages that
+// only show a "Sign in" button stay light.
+const loadPanel = () => import("@/components/auth/sign-in-form");
+const SignInPanel = dynamic(() => loadPanel().then((m) => m.SignInPanel), {
+  loading: () => (
+    <div className="space-y-4" aria-busy="true" aria-label="Loading sign-in form">
+      <Skeleton className="h-9 w-full" />
+      <Skeleton className="h-9 w-full" />
+      <Skeleton className="h-9 w-full" />
+      <Skeleton className="h-9 w-full" />
+    </div>
+  ),
+});
 
 /**
  * A "Sign in" control. `mode="modal"` opens the sign-in form in a dialog so
@@ -38,7 +54,9 @@ export function SignInButton({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogTrigger asChild onPointerEnter={loadPanel} onFocus={loadPanel}>
+        {children}
+      </DialogTrigger>
       <DialogContent
         className="gap-6 sm:max-w-[420px]"
         // Close before any navigation. Next.js keeps the previous page alive for

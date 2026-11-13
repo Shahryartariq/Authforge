@@ -1,7 +1,11 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Logo } from "@/components/icons";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { site } from "@/lib/site";
+
+// Sign-in, sign-up and the email/2FA steps aren't useful search results.
+export const metadata: Metadata = { robots: { index: false, follow: true } };
 
 export default function AuthLayout({ children }: LayoutProps<"/">) {
   return (

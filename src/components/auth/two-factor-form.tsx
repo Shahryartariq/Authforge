@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -12,12 +12,13 @@ import { Field } from "@/components/ui/field";
 import { FormAlert } from "@/components/form-alert";
 import { authClient } from "@/lib/auth-client";
 import { authErrorMessage } from "@/lib/auth-errors";
+import { useQueryParams } from "@/lib/use-query-params";
 import { safeRedirect } from "@/lib/utils";
 import { otpSchema } from "@/lib/validation";
 
 export function TwoFactorForm() {
   const router = useRouter();
-  const params = useSearchParams();
+  const params = useQueryParams();
   const callbackURL = safeRedirect(params.get("callbackURL"));
   const [mode, setMode] = useState<"totp" | "backup">("totp");
   const [error, setError] = useState("");

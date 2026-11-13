@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { MailCheck } from "lucide-react";
 import { PasswordInput } from "@/components/auth/password-input";
 import { SocialButtons } from "@/components/auth/social-buttons";
@@ -14,6 +14,7 @@ import { OrDivider } from "@/components/auth/or-divider";
 import { authClient } from "@/lib/auth-client";
 import { authErrorMessage } from "@/lib/auth-errors";
 import type { EmailFeatures, EnabledProviders } from "@/lib/env";
+import { useQueryParams } from "@/lib/use-query-params";
 import { safeRedirect } from "@/lib/utils";
 import { fieldErrors, signUpSchema } from "@/lib/validation";
 
@@ -25,7 +26,7 @@ export function SignUpForm({
   email: EmailFeatures;
 }) {
   const router = useRouter();
-  const params = useSearchParams();
+  const params = useQueryParams();
   const callbackURL = safeRedirect(params.get("callbackURL"));
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState("");

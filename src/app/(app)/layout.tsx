@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import Link from "next/link";
 import { ImpersonationBanner } from "@/components/app/impersonation-banner";
@@ -8,6 +9,9 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { Skeleton } from "@/components/ui/skeleton";
 import { isAdmin, requireSession } from "@/lib/session";
 import { site } from "@/lib/site";
+
+// Signed-in pages: never indexed.
+export const metadata: Metadata = { robots: { index: false, follow: false } };
 
 export default function AppLayout({ children }: LayoutProps<"/">) {
   return (

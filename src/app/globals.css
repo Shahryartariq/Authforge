@@ -91,7 +91,7 @@
   --color-success-soft: var(--success-soft);
   --color-destructive-soft: var(--destructive-soft);
   --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
 }
 
 @layer base {

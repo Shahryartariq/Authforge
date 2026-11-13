@@ -6,6 +6,8 @@ import { site } from "@/lib/site";
 export const metadata: Metadata = {
   title: "Privacy",
   description: `What the ${site.name} demo stores about you, and how to delete it.`,
+  alternates: { canonical: "/privacy" },
+  openGraph: { url: "/privacy" },
 };
 
 // If you deploy Authforge for your own app, rewrite this page for it.

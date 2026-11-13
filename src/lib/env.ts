@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "./zod";
 
 /**
  * Server environment, validated once at boot.

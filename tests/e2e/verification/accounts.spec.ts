@@ -80,6 +80,18 @@ test.describe("sign-up and sign-in", () => {
     await expect(page).toHaveURL(/\/dashboard/);
   });
 
+  test("signing in from a protected page takes you back to it", async ({ page }) => {
+    const email = uniqueEmail("callback");
+    await signUpVerified(page, "Call Back", email);
+    await signOut(page);
+    await page.goto("/settings");
+    await expect(page).toHaveURL(/\/sign-in\?callbackURL=%2Fsettings/);
+    await page.fill("#email", email);
+    await page.fill("#password", PASSWORD);
+    await page.locator("form").getByRole("button", { name: "Sign in", exact: true }).click();
+    await expect(page).toHaveURL(/\/settings$/);
+  });
+
   test("password reset by email", async ({ page }) => {
     const email = uniqueEmail("reset");
     await signUpVerified(page, "Reset Me", email);

@@ -4,7 +4,7 @@ import { GitHubIcon, GoogleIcon, Logo } from "@/components/icons";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { SignInButton } from "@/components/auth/sign-in-button";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { providers } from "@/lib/env";
+import { baseURL, providers } from "@/lib/env";
 import { site } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
@@ -43,9 +43,33 @@ const features = [
 
 const stack = ["Next.js 16", "TypeScript", "Better Auth", "Drizzle or Prisma", "PostgreSQL", "shadcn/ui", "Resend", "Tailwind CSS"];
 
+// Structured data, so search engines know this page is an open-source project.
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    { "@type": "WebSite", "@id": `${baseURL}/#website`, name: site.name, url: baseURL },
+    {
+      "@type": "SoftwareSourceCode",
+      name: site.name,
+      description: site.description,
+      url: baseURL,
+      codeRepository: site.repo,
+      license: "https://opensource.org/licenses/MIT",
+      programmingLanguage: "TypeScript",
+      runtimePlatform: "Next.js",
+      author: { "@type": "Person", name: site.author, url: site.authorUrl },
+    },
+  ],
+};
+
 export default function Home() {
   return (
     <div className="flex min-h-dvh flex-col">
+      <script
+        type="application/ld+json"
+        // Static data from this file; escape "<" so it can never close the tag.
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
+      />
       <header className="mx-auto flex w-full max-w-5xl items-center justify-between px-4 py-4 sm:px-6">
         <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight">
           <Logo className="size-7" />
