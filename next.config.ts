@@ -22,7 +22,7 @@ const securityHeaders = [
   { key: "X-Frame-Options", value: "DENY" },
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-  { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), interest-cohort=()" },
+  { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
   { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
 ];
 
@@ -30,6 +30,9 @@ const nextConfig: NextConfig = {
   // The browser tests build two variants side by side (see playwright.config.ts).
   distDir: process.env.NEXT_DIST_DIR || ".next",
   cacheComponents: true,
+  // Put the (small, Tailwind) CSS in the HTML: one less render-blocking request
+  // for first-time visitors, who are most of a demo's traffic.
+  experimental: { inlineCss: true },
   partialPrefetching: true,
   poweredByHeader: false,
   turbopack: {
